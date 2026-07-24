@@ -342,6 +342,76 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .notice.on{display:block;animation:krise .5s ease-out both}
 .notice b{color:var(--hazard);font-weight:700}
 
+/* ---------- 声のホログラム（認識途中の可視化） ---------- */
+.ghost-text{
+  position:absolute;left:50%;top:31%;z-index:12;pointer-events:none;
+  width:min(88%,460px);text-align:center;
+  transform:translate(-50%,-50%);
+  font-family:var(--mono);font-weight:700;font-size:clamp(15px,5.4vw,23px);
+  letter-spacing:.06em;line-height:1.5;word-break:break-word;
+  color:rgba(158,226,255,.94);
+  text-shadow:0 0 7px rgba(79,168,142,.95),0 0 20px rgba(120,208,255,.7),0 0 46px rgba(120,208,255,.35);
+  mix-blend-mode:screen;filter:blur(.45px);
+  opacity:0;transition:opacity .16s ease}
+.ghost-text.on{opacity:1;animation:ghostFlick 1.7s steps(1) infinite,ghostDrift 3.2s ease-in-out infinite}
+@keyframes ghostFlick{
+  0%,100%{opacity:.95}7%{opacity:.42}10%{opacity:.9}26%{opacity:.7}
+  29%{opacity:1}52%{opacity:.38}55%{opacity:.88}73%{opacity:1}
+  77%{opacity:.58}80%{opacity:.95}}
+@keyframes ghostDrift{
+  0%,100%{transform:translate(-50%,-50%) scale(1);filter:blur(.45px)}
+  34%{transform:translate(-50%,calc(-50% - 3px)) scale(1.014);filter:blur(1.1px)}
+  68%{transform:translate(calc(-50% + 3px),-50%) scale(.995);filter:blur(.25px)}}
+/* 解析中の色収差と走査カーソル */
+.ghost-text::before{content:attr(data-t);position:absolute;left:0;right:0;top:0;
+  color:rgba(255,116,104,.32);mix-blend-mode:screen;animation:ghostSplit .52s steps(1) infinite}
+@keyframes ghostSplit{
+  0%,100%{transform:translate(0,0);opacity:0}
+  28%{transform:translate(-2px,1px);opacity:.55}
+  58%{opacity:0}
+  84%{transform:translate(2px,-1px);opacity:.38}}
+.ghost-text.on::after{content:"▊";margin-left:.14em;color:rgba(150,220,255,.8);animation:blink .58s steps(1) infinite}
+
+/* ---------- 称号 ＆ デイリー特務 ---------- */
+.titlebar{display:flex;align-items:center;gap:10px;width:100%;margin-top:13px;padding:10px 13px;text-align:left;
+  border:1px solid rgba(232,179,58,.32);border-radius:3px;background:linear-gradient(100deg,#17130F,#0D0B09 65%)}
+.tlab{font-family:var(--mono);font-size:8.5px;letter-spacing:.22em;color:var(--dust);flex:none}
+.tname{font-family:var(--disp);font-weight:700;font-size:16px;letter-spacing:.05em;color:var(--hazard);
+  text-shadow:0 0 16px rgba(232,179,58,.35);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tcount{margin-left:auto;flex:none;font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--dust);
+  border:1px solid var(--edge);padding:5px 8px;border-radius:2px}
+
+.card.daily{grid-column:1/-1;display:flex;align-items:center;gap:12px;padding:12px 14px;
+  background:linear-gradient(100deg,#0D1614,#0A0C0B 62%);border-color:rgba(79,168,142,.38)}
+.card.daily .dmark{font-family:var(--disp);font-weight:900;font-size:15px;letter-spacing:.14em;color:var(--bio);flex:none}
+.card.daily .dtxt{min-width:0}
+.card.daily .nm{margin-top:0}
+.card.daily .rg{margin-top:3px}
+.card.daily .dstate{margin-left:auto;flex:none;font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;
+  color:var(--bio);border:1px solid rgba(79,168,142,.45);padding:7px 10px;border-radius:2px}
+.card.daily.ready{box-shadow:0 0 22px rgba(79,168,142,.2) inset}
+.card.daily.ready .dstate{animation:rpulse 1.8s ease-in-out infinite}
+.card.daily.done{opacity:.42;border-color:var(--edge)}
+.card.daily.done .dmark,.card.daily.done .dstate{color:var(--dust);border-color:var(--edge)}
+
+.tgain{border:1px solid rgba(232,179,58,.4);background:rgba(20,16,11,.92);border-radius:3px;padding:13px 15px;margin-top:16px}
+.tgain .rk{font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--hazard)}
+.tgain .tg{font-family:var(--disp);font-weight:900;font-size:22px;letter-spacing:.04em;margin-top:6px;color:var(--hazard);
+  text-shadow:0 0 22px rgba(232,179,58,.5);animation:tgin .75s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes tgin{0%{opacity:0;transform:scale(.7)}100%{opacity:1;transform:none}}
+.tgain .td{font-size:11.5px;color:var(--dust);margin-top:5px;line-height:1.7}
+.tgain .tnow{font-family:var(--mono);font-size:10px;color:var(--dust);margin-top:10px;letter-spacing:.06em}
+
+.tlist{max-height:54vh;overflow-y:auto;-webkit-overflow-scrolling:touch;margin:12px 0}
+.titem{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:11px 12px;
+  border:1px solid var(--edge);border-radius:2px;margin-bottom:7px;background:#0E0C0A}
+.titem.on{border-color:var(--hazard);box-shadow:0 0 18px rgba(232,179,58,.16) inset}
+.titem .tn{display:block;font-family:var(--disp);font-weight:700;font-size:15px;letter-spacing:.04em}
+.titem.on .tn{color:var(--hazard)}
+.titem .tdz{display:block;font-size:10.5px;color:var(--dust);margin-top:3px;line-height:1.5}
+.titem .tk{margin-left:auto;flex:none;font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;color:var(--bio)}
+.titem.lock{opacity:.4}
+
 /* ---------- 共鳴（RESONANCE） ---------- */
 .combo{position:absolute;left:13px;top:10px;z-index:17;display:flex;align-items:baseline;gap:7px;
   opacity:0;transition:opacity .3s;pointer-events:none}
@@ -393,6 +463,76 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .ripple.lv3 i:nth-child(5){animation-delay:.36s}
 .ripple.lv3 i:nth-child(6){animation-delay:.46s}
 .motes.big i{box-shadow:0 0 16px rgba(180,235,255,1),0 0 32px rgba(140,215,255,.7)}
+
+/* ---------- 声のホログラム（認識途中の可視化） ---------- */
+.ghost-text{
+  position:absolute;left:50%;top:31%;z-index:12;pointer-events:none;
+  width:min(88%,460px);text-align:center;
+  transform:translate(-50%,-50%);
+  font-family:var(--mono);font-weight:700;font-size:clamp(15px,5.4vw,23px);
+  letter-spacing:.06em;line-height:1.5;word-break:break-word;
+  color:rgba(158,226,255,.94);
+  text-shadow:0 0 7px rgba(79,168,142,.95),0 0 20px rgba(120,208,255,.7),0 0 46px rgba(120,208,255,.35);
+  mix-blend-mode:screen;filter:blur(.45px);
+  opacity:0;transition:opacity .16s ease}
+.ghost-text.on{opacity:1;animation:ghostFlick 1.7s steps(1) infinite,ghostDrift 3.2s ease-in-out infinite}
+@keyframes ghostFlick{
+  0%,100%{opacity:.95}7%{opacity:.42}10%{opacity:.9}26%{opacity:.7}
+  29%{opacity:1}52%{opacity:.38}55%{opacity:.88}73%{opacity:1}
+  77%{opacity:.58}80%{opacity:.95}}
+@keyframes ghostDrift{
+  0%,100%{transform:translate(-50%,-50%) scale(1);filter:blur(.45px)}
+  34%{transform:translate(-50%,calc(-50% - 3px)) scale(1.014);filter:blur(1.1px)}
+  68%{transform:translate(calc(-50% + 3px),-50%) scale(.995);filter:blur(.25px)}}
+/* 解析中の色収差と走査カーソル */
+.ghost-text::before{content:attr(data-t);position:absolute;left:0;right:0;top:0;
+  color:rgba(255,116,104,.32);mix-blend-mode:screen;animation:ghostSplit .52s steps(1) infinite}
+@keyframes ghostSplit{
+  0%,100%{transform:translate(0,0);opacity:0}
+  28%{transform:translate(-2px,1px);opacity:.55}
+  58%{opacity:0}
+  84%{transform:translate(2px,-1px);opacity:.38}}
+.ghost-text.on::after{content:"▊";margin-left:.14em;color:rgba(150,220,255,.8);animation:blink .58s steps(1) infinite}
+
+/* ---------- 称号 ＆ デイリー特務 ---------- */
+.titlebar{display:flex;align-items:center;gap:10px;width:100%;margin-top:13px;padding:10px 13px;text-align:left;
+  border:1px solid rgba(232,179,58,.32);border-radius:3px;background:linear-gradient(100deg,#17130F,#0D0B09 65%)}
+.tlab{font-family:var(--mono);font-size:8.5px;letter-spacing:.22em;color:var(--dust);flex:none}
+.tname{font-family:var(--disp);font-weight:700;font-size:16px;letter-spacing:.05em;color:var(--hazard);
+  text-shadow:0 0 16px rgba(232,179,58,.35);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tcount{margin-left:auto;flex:none;font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--dust);
+  border:1px solid var(--edge);padding:5px 8px;border-radius:2px}
+
+.card.daily{grid-column:1/-1;display:flex;align-items:center;gap:12px;padding:12px 14px;
+  background:linear-gradient(100deg,#0D1614,#0A0C0B 62%);border-color:rgba(79,168,142,.38)}
+.card.daily .dmark{font-family:var(--disp);font-weight:900;font-size:15px;letter-spacing:.14em;color:var(--bio);flex:none}
+.card.daily .dtxt{min-width:0}
+.card.daily .nm{margin-top:0}
+.card.daily .rg{margin-top:3px}
+.card.daily .dstate{margin-left:auto;flex:none;font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;
+  color:var(--bio);border:1px solid rgba(79,168,142,.45);padding:7px 10px;border-radius:2px}
+.card.daily.ready{box-shadow:0 0 22px rgba(79,168,142,.2) inset}
+.card.daily.ready .dstate{animation:rpulse 1.8s ease-in-out infinite}
+.card.daily.done{opacity:.42;border-color:var(--edge)}
+.card.daily.done .dmark,.card.daily.done .dstate{color:var(--dust);border-color:var(--edge)}
+
+.tgain{border:1px solid rgba(232,179,58,.4);background:rgba(20,16,11,.92);border-radius:3px;padding:13px 15px;margin-top:16px}
+.tgain .rk{font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--hazard)}
+.tgain .tg{font-family:var(--disp);font-weight:900;font-size:22px;letter-spacing:.04em;margin-top:6px;color:var(--hazard);
+  text-shadow:0 0 22px rgba(232,179,58,.5);animation:tgin .75s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes tgin{0%{opacity:0;transform:scale(.7)}100%{opacity:1;transform:none}}
+.tgain .td{font-size:11.5px;color:var(--dust);margin-top:5px;line-height:1.7}
+.tgain .tnow{font-family:var(--mono);font-size:10px;color:var(--dust);margin-top:10px;letter-spacing:.06em}
+
+.tlist{max-height:54vh;overflow-y:auto;-webkit-overflow-scrolling:touch;margin:12px 0}
+.titem{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:11px 12px;
+  border:1px solid var(--edge);border-radius:2px;margin-bottom:7px;background:#0E0C0A}
+.titem.on{border-color:var(--hazard);box-shadow:0 0 18px rgba(232,179,58,.16) inset}
+.titem .tn{display:block;font-family:var(--disp);font-weight:700;font-size:15px;letter-spacing:.04em}
+.titem.on .tn{color:var(--hazard)}
+.titem .tdz{display:block;font-size:10.5px;color:var(--dust);margin-top:3px;line-height:1.5}
+.titem .tk{margin-left:auto;flex:none;font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;color:var(--bio)}
+.titem.lock{opacity:.4}
 
 /* ---------- 共鳴（RESONANCE） ---------- */
 .reso{flex:none;display:flex;align-items:center;gap:9px;height:19px;padding:0 13px;opacity:.4;transition:opacity .3s}
@@ -537,6 +677,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     </div>
     <div class="tape thin" style="margin-top:10px"></div>
     <div class="scroller">
+      <button class="titlebar" id="titleBar">
+        <span class="tlab">CURRENT TITLE</span>
+        <span class="tname" id="tName">新人特掃員</span>
+        <span class="tcount" id="tCount">1 / 8</span>
+      </button>
       <div class="grid" id="stageGrid"></div>
       <div class="row">
         <button class="ghost" id="btnReview">苦手単語で復習（<span id="revCount">0</span>）</button>
@@ -598,6 +743,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       <div class="flashwhite" id="flash"></div>
       <div class="ripple" id="ripple"></div>
       <div class="motes" id="motes"></div>
+      <div id="ghostText" class="ghost-text"></div>
       <div class="rflash" id="rflash"></div>
       <div class="nz" id="nz"><div class="nz-grain"></div><div class="nz-edge"></div><div class="nz-bands" id="nzBands"></div></div>
       <div class="notice" id="notice"></div>
@@ -631,6 +777,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       <div class="verdict" id="rVerdict"></div>
       <div class="tape thin" style="margin-top:14px"></div>
       <div class="stats" id="rStats"></div>
+      <div id="rTitle"></div>
       <div id="rRecord"></div>
       <div class="revw" id="rRev"></div>
       <div class="row" style="margin-top:18px">
@@ -1598,10 +1745,47 @@ let CFG = { ...DEF };
 let SAVE = { cleared: {}, best: {}, weak: [], recs: {}, pro: false };
 async function loadAll() {
   try { const a = await Store.get('vox9:cfg'); if (a) CFG = { ...DEF, ...JSON.parse(a) }; } catch (e) {}
-  try { const b = await Store.get('vox9:save'); if (b) SAVE = { cleared: {}, best: {}, weak: [], recs: {}, pro: false, ...JSON.parse(b) }; } catch (e) {}
+  try {
+    const b = await Store.get('vox9:save');
+    if (b) SAVE = {
+      cleared: {}, best: {}, weak: [], recs: {}, pro: false,
+      dailyDate: '', titles: [], activeTitle: '新人特掃員', dailyCount: 0, dailyStreak: 0,
+      ...JSON.parse(b)
+    };
+  } catch (e) {}
+  if (!SAVE.titles || !SAVE.titles.length) SAVE.titles = ['rookie'];
 }
 const saveCfg = () => Store.set('vox9:cfg', JSON.stringify(CFG));
 const saveGame = () => Store.set('vox9:save', JSON.stringify(SAVE));
+
+/* ---------- 称号 ---------- */
+const TITLES = [
+  { id: 'rookie', name: '新人特掃員', desc: '着任時に与えられる呼称', cond: () => false },
+  { id: 'd1', name: '日々の研鑽', desc: 'デイリー特務を初めて完了した', cond: c => c.daily },
+  { id: 'd3', name: '暁の特掃員', desc: 'デイリー特務を3日続けて完了した', cond: c => c.daily && SAVE.dailyStreak >= 3 },
+  { id: 'd7', name: '不屈の意志', desc: 'デイリー特務を7日続けて完了した', cond: c => c.daily && SAVE.dailyStreak >= 7 },
+  { id: 'd30', name: '言葉の守り手', desc: 'デイリー特務を通算30回完了した', cond: c => c.daily && SAVE.dailyCount >= 30 },
+  { id: 'noharm', name: '無傷の共鳴', desc: 'デイリー特務をEGO無傷で完了した', cond: c => c.daily && c.hp === MAXHP },
+  { id: 'reso10', name: '共鳴の申し子', desc: '10連続で浄化を成功させた', cond: c => c.maxCombo >= 10 },
+  { id: 'all12', name: 'バベルを黙らせた者', desc: '全12区画を浄化した', cond: (c, cl) => cl >= 12 }
+];
+const ymd = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+const todayKey = () => ymd(new Date());
+const dailyDone = () => SAVE.dailyDate === todayKey();
+
+/* 条件を満たした称号を付与し、新規獲得ぶんを返す */
+function grantTitles(ctx) {
+  const owned = new Set(SAVE.titles || []);
+  const cleared = Object.keys(SAVE.cleared || {}).length;
+  const gained = [];
+  for (const t of TITLES) {
+    if (owned.has(t.id)) continue;
+    if (t.cond(ctx, cleared)) { owned.add(t.id); gained.push(t); }
+  }
+  SAVE.titles = [...owned];
+  if (gained.length) SAVE.activeTitle = gained[gained.length - 1].name;
+  return gained;
+}
 
 /* ---------- words ---------- */
 const stageOf = n => Math.min(12, Math.ceil(Math.floor(n) / 100));
@@ -1836,6 +2020,18 @@ function renderSelect() {
     <div class="rg">BRIEFING · NO COMBAT</div><div class="playmark">▶ 再生</div>`;
   b0.onclick = async () => { SFX.ui(); await playBriefing(true); renderSelect(); show('select'); };
   g.appendChild(b0);
+
+  const dDone = dailyDone();
+  const bd = document.createElement('button');
+  bd.className = 'card daily ' + (dDone ? 'done' : 'ready');
+  bd.disabled = dDone;
+  const wk = Math.min(10, SAVE.weak.length);
+  bd.innerHTML = `<span class="dmark">DAILY</span>
+    <div class="dtxt"><div class="nm">デイリー特務 — 弱点集中</div>
+    <div class="rg">${dDone ? '本日の特務は完了' : (wk ? `苦手 ${wk} 語＋補充で 10 語` : '全区画からランダム 10 語')}</div></div>
+    <div class="dstate">${dDone ? 'CLEARED' : 'AVAILABLE'}</div>`;
+  if (!dDone) bd.onclick = () => { SFX.ui(); startDaily(); };
+  g.appendChild(bd);
   STAGES.forEach((st, i) => {
     const n = i + 1, ok = unlocked(n), cl = !!SAVE.cleared[n];
     if (cl) done++;
@@ -1855,6 +2051,8 @@ function renderSelect() {
   $('#prog').textContent = `${done} / 12`;
   $('#revCount').textContent = SAVE.weak.length;
   $('#recCount').textContent = recs;
+  $('#tName').textContent = SAVE.activeTitle || '新人特掃員';
+  $('#tCount').textContent = `${(SAVE.titles || []).length} / ${TITLES.length}`;
   $$('.seg').forEach(seg => {
     const k = seg.dataset.set;
     seg.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(CFG[k] === b.dataset.v)));
@@ -1887,13 +2085,16 @@ function buildRec() {
   r.onstart = () => { recReady = true; $('#wave').classList.add('live'); setHeard('聞き取り中…', ''); };
   r.onresult = e => {
     if (!G.running || G.locked || Date.now() < gateUntil) return;
-    const texts = []; let fin = false;
+    const texts = []; let fin = false, interim = '';
     for (let i = Math.max(0, e.resultIndex - 1); i < e.results.length; i++) {
       const res = e.results[i];
       if (res.isFinal) fin = true;
+      else interim = res[0].transcript;          // 認識途中の文字列
       for (let a = 0; a < res.length; a++) texts.push(res[a].transcript);
     }
     if (!texts.length) return;
+    // 4. 確定したら輪郭は消える。途中なら揺らぎながら浮かぶ
+    if (fin) clearGhost(); else setGhost(interim);
     setHeard(texts[0].trim(), '');
     for (const t of texts) if (judge(t, G.answers).ok) { setHeard(texts[0].trim(), 'hit'); onCorrect(); return; }
     const nr = Math.max(...texts.map(t => judge(t, G.answers).near));
@@ -1923,7 +2124,17 @@ function startRec() {
   recWant = true;
   try { rec.start(); } catch (e) {}
 }
-function stopRec() { recWant = false; try { rec && rec.stop(); } catch (e) {} $('#wave').classList.remove('live'); }
+function stopRec() { recWant = false; try { rec && rec.stop(); } catch (e) {} $('#wave').classList.remove('live'); clearGhost(); }
+/* 認識途中の声をホログラムとして表示する */
+function setGhost(t) {
+  const el = $('#ghostText');
+  const s = (t || '').trim();
+  el.textContent = s;
+  el.dataset.t = s;
+  el.classList.toggle('on', !!s);
+}
+const clearGhost = () => setGhost('');
+
 function setHeard(t, cls) { const h = $('#heard'); h.textContent = t; h.className = 'heard ' + (cls || ''); }
 function notice(html, ms) {
   const n = $('#notice'); n.innerHTML = html; n.classList.remove('on'); void n.offsetWidth; n.classList.add('on');
@@ -1934,7 +2145,7 @@ function setMode(m) {
   CFG.input = m; saveCfg();
   const ti = $('#typein');
   if (m === 'type') {
-    stopRec(); ti.classList.add('on'); ti.value = '';
+    stopRec(); clearGhost(); ti.classList.add('on'); ti.value = '';
     $('#btnMode').textContent = '🎤 音声に切替';
     setHeard('キーボードで入力', '');
     if (G.running) setTimeout(() => ti.focus(), 60);
@@ -1995,7 +2206,7 @@ const SPEED = { slow: 1.4, normal: 1, fast: .74 };
 const G = {
   stage: 1, review: false, queue: [], i: 0, word: null, answers: [],
   hp: MAXHP, combo: 0, maxCombo: 0, score: 0, right: 0, tries: 0,
-  missed: [], phase: 'wave', bossHp: 3, bossTotal: 3, bossSpawned: false, nearCount: 0,
+  missed: [], phase: 'wave', bossHp: 3, bossTotal: 3, bossSpawned: false, nearCount: 0, daily: false,
   t0: 0, dur: 0, raf: 0, running: false, locked: false, requeued: null
 };
 const durationFor = s => Math.max(7.5, 14.5 - (s - 1) * .55) * 1000 * SPEED[CFG.speed];
@@ -2025,24 +2236,44 @@ async function beginStage(n) {
   startStage(n, false);
 }
 
-function startStage(n, review) {
-  G.stage = n; G.review = !!review;
-  const list = review
-    ? shuffle(SAVE.weak.map(x => byNum[x]).filter(Boolean)).slice(0, 30)
-    : shuffle(POOL[n]).slice(0, CFG.count === '100' ? POOL[n].length : Math.min(+CFG.count, POOL[n].length));
-  G.queue = list; G.i = 0; G.hp = MAXHP; G.combo = 0; G.maxCombo = 0; G.score = 0;
+function beginRun(opt) {
+  G.stage = opt.stage || 1;
+  G.review = !!opt.review;
+  G.daily = !!opt.daily;
+  G.queue = opt.list; G.i = 0; G.hp = MAXHP; G.combo = 0; G.maxCombo = 0; G.score = 0;
   G.right = 0; G.tries = 0; G.missed = []; G.requeued = new Set();
   G.phase = 'wave'; G.bossHp = 3; G.bossTotal = 3; G.bossSpawned = false; G.running = true; G.locked = false;
-  $('#arena').classList.remove('boss');
+  $('#arena').classList.remove('boss', 'low', 'resonance');
   updateReso(false);
-  const guardPool = review ? list : POOL[n];
-  setPoolWords(new Set(guardPool.flatMap(r => r[4].split(',')).map(a => norm(a)).filter(Boolean)));
-  $('#pStg').textContent = review ? 'REVIEW' : `SECTOR ${pad(n)}`;
+  setPoolWords(new Set((opt.guard || opt.list).flatMap(r => r[4].split(',')).map(a => norm(a)).filter(Boolean)));
+  $('#pStg').textContent = opt.label;
   $('#bLabel').textContent = 'DISTANCE TO BREACH';
-  $('#arena').classList.remove('low');
   show('play');
   if (CFG.input === 'voice') startRec(); else setMode('type');
   nextWord();
+}
+
+function startStage(n, review) {
+  const list = review
+    ? shuffle(SAVE.weak.map(x => byNum[x]).filter(Boolean)).slice(0, 30)
+    : shuffle(POOL[n]).slice(0, CFG.count === '100' ? POOL[n].length : Math.min(+CFG.count, POOL[n].length));
+  beginRun({
+    stage: n, review, list, guard: review ? list : POOL[n],
+    label: review ? 'REVIEW' : `SECTOR ${pad(n)}`
+  });
+}
+
+/* デイリー特務：苦手単語を軸に10語。足りなければ全区画から補充 */
+function startDaily() {
+  const list = shuffle(SAVE.weak.map(x => byNum[x]).filter(Boolean)).slice(0, 10);
+  if (list.length < 10) {
+    const used = new Set(list.map(r => r[0]));
+    const all = [];
+    for (let s = 1; s <= 12; s++) if (POOL[s]) all.push(...POOL[s]);
+    list.push(...shuffle(all).filter(r => !used.has(r[0])).slice(0, 10 - list.length));
+  }
+  const pace = Math.min(12, Math.max(1, Object.keys(SAVE.cleared || {}).length + 1));
+  beginRun({ stage: pace, daily: true, list: shuffle(list), label: 'DAILY 特務' });
 }
 
 function fitBlank(chars) {
@@ -2052,12 +2283,13 @@ function fitBlank(chars) {
 
 async function nextWord() {
   G.locked = false; G.nearCount = 0;
+  clearGhost();
   $('#qbox').classList.remove('right');
   gateUntil = Date.now() + 350;
   if (G.hp <= 0) return endStage(false);
 
   if (G.phase === 'wave' && G.i >= G.queue.length) {
-    if (G.review) return endStage(true);
+    if (G.review || G.daily) return endStage(true);
     G.phase = 'boss';
     const st = STAGES[G.stage - 1];
     G.locked = true;
@@ -2221,9 +2453,10 @@ function onCorrect() {
   const bossSurvives = G.phase === 'boss' && G.bossHp > 1;
   $('#zone').classList.add(bossSurvives ? 'stagger' : 'tuned');
   if (!bossSurvives && G.phase === 'boss') G.bossSpawned = false;
+  clearGhost();
   purifyFx(G.combo); SFX.kill(over); say(ans);
   if (over) flashScreen();
-  if (G.review) {
+  if (G.review || G.daily) {
     const k = SAVE.weak.indexOf(G.word[0]);
     if (k >= 0) { SAVE.weak.splice(k, 1); saveGame(); }
   }
@@ -2234,6 +2467,7 @@ function onCorrect() {
 function onFail() {
   if (G.locked) return;
   G.locked = true; cancelAnimationFrame(G.raf);
+  clearGhost();
   const hadReso = G.combo >= RES_ON;
   G.combo = 0; G.tries++;
   updateReso(false);
@@ -2283,7 +2517,7 @@ async function endStage(survived) {
   }
   const n = G.stage, st = STAGES[n - 1];
 
-  if (survived && !G.review) {
+  if (survived && !G.review && !G.daily) {
     SAVE.cleared[n] = true;
     const ord = { S: 4, A: 3, B: 2, C: 1, D: 0 };
     if (!SAVE.best[n] || ord[rank] > ord[SAVE.best[n]]) SAVE.best[n] = rank;
@@ -2298,17 +2532,42 @@ async function endStage(survived) {
     if (n === 12) await CINE.play({ ...EPI_HEAD, beats: EPILOGUE });
   }
 
-  $('#rEye').textContent = G.review ? 'Review — debrief' : `Sector ${pad(n)} · ${st.t} — debrief`;
+  let gained = [];
+  if (survived) {
+    if (G.daily) {
+      const yst = ymd(new Date(Date.now() - 864e5));
+      SAVE.dailyStreak = (SAVE.dailyDate === yst) ? (SAVE.dailyStreak || 0) + 1 : 1;
+      SAVE.dailyCount = (SAVE.dailyCount || 0) + 1;
+      SAVE.dailyDate = todayKey();
+    }
+    gained = grantTitles({ daily: !!G.daily, hp: G.hp, maxCombo: G.maxCombo });
+    await saveGame();
+  }
+
+  $('#rTitle').innerHTML = (G.daily && survived)
+    ? `<div class="tgain"><div class="rk">DAILY MISSION COMPLETE</div>
+        <div class="tg">デイリー特務 完了</div>
+        <div class="td">連続 ${SAVE.dailyStreak} 日 ／ 通算 ${SAVE.dailyCount} 回</div>
+        ${gained.length ? gained.map(t => `<div class="tg" style="font-size:19px;margin-top:12px">称号「${escapeHtml(t.name)}」を獲得</div><div class="td">${escapeHtml(t.desc)}</div>`).join('') : ''}
+        <div class="tnow">現在の称号：${escapeHtml(SAVE.activeTitle)}</div></div>`
+    : (gained.length
+        ? `<div class="tgain"><div class="rk">TITLE UNLOCKED</div>
+            ${gained.map(t => `<div class="tg">称号「${escapeHtml(t.name)}」を獲得</div><div class="td">${escapeHtml(t.desc)}</div>`).join('')}
+            <div class="tnow">現在の称号：${escapeHtml(SAVE.activeTitle)}</div></div>`
+        : '');
+
+  $('#rEye').textContent = G.daily ? 'Daily mission — debrief'
+    : G.review ? 'Review — debrief' : `Sector ${pad(n)} · ${st.t} — debrief`;
   $('#rRank').textContent = rank; $('#rRank').className = 'rank ' + rank;
   $('#rVerdict').textContent = survived
-    ? (G.review ? '復習完了' : (n === 12 ? '地上へ帰還' : `${st.t} 浄化`))
+    ? (G.daily ? 'デイリー特務 完了' : G.review ? '復習完了' : (n === 12 ? '地上へ帰還' : `${st.t} 浄化`))
     : '同化 — 信号消失';
   $('#rStats').innerHTML = `
     <div><span>SCORE</span><b>${G.score.toLocaleString()}</b></div>
     <div><span>ACCURACY</span><b>${Math.round(acc * 100)}%</b></div>
     <div><span>RESTORED</span><b>${G.right}</b></div>
     <div><span>MAX COMBO</span><b>×${G.maxCombo}</b></div>`;
-  $('#rRecord').innerHTML = (survived && !G.review)
+  $('#rRecord').innerHTML = (survived && !G.review && !G.daily)
     ? `<div class="revw"><h3 style="color:var(--hazard)">回収した記録</h3></div>${recCard(st.rec, false, st.log)}` : '';
   $('#rRev').innerHTML = G.missed.length
     ? `<h3>浄化できなかった単語 ${G.missed.length}</h3>` + G.missed.map(m => {
@@ -2319,7 +2578,8 @@ async function endStage(survived) {
       }).join('')
     : `<h3>取り逃しなし</h3><div class="muted" style="font-size:12px">全語を発音で浄化。</div>`;
   $$('#rRev .say').forEach(b => b.onclick = () => say(b.dataset.w));
-  $('#btnNext').style.display = (survived && !G.review && n < 12) ? '' : 'none';
+  $('#btnNext').style.display = (survived && !G.review && !G.daily && n < 12) ? '' : 'none';
+  $('#btnRetry').style.display = G.daily ? 'none' : '';
   show('result');
 }
 
@@ -2354,10 +2614,34 @@ $('#btnWipe').onclick = async () => {
     return;
   }
   wipeReset();
-  SAVE = { cleared: {}, best: {}, weak: [], recs: {}, pro: false };
+  SAVE = {
+    cleared: {}, best: {}, weak: [], recs: {}, pro: false,
+    dailyDate: '', titles: ['rookie'], activeTitle: '新人特掃員', dailyCount: 0, dailyStreak: 0
+  };
   await saveGame();
   renderSelect();
   toast('記録を消去しました。状況説明と区画01から始められます。');
+};
+
+$('#titleBar').onclick = () => {
+  const owned = new Set(SAVE.titles || []);
+  const items = TITLES.map(t => {
+    const has = owned.has(t.id), on = SAVE.activeTitle === t.name;
+    return `<button class="titem${on ? ' on' : ''}${has ? '' : ' lock'}" data-n="${escapeHtml(t.name)}"${has ? '' : ' disabled'}>
+      <span><span class="tn">${has ? escapeHtml(t.name) : '— 未獲得 —'}</span><span class="tdz">${escapeHtml(t.desc)}</span></span>
+      ${on ? '<span class="tk">EQUIPPED</span>' : ''}</button>`;
+  }).join('');
+  const d = document.createElement('div');
+  d.className = 'ovl';
+  d.innerHTML = `<div class="ovlbox"><div class="eyebrow">Titles</div>
+    <h2 style="font-family:var(--disp);font-size:24px;margin:6px 0 2px">称号</h2>
+    <div class="tlist">${items}</div>
+    <button class="ghost" id="tClose" style="margin-top:0">閉じる</button></div>`;
+  document.body.appendChild(d);
+  d.querySelectorAll('.titem:not(.lock)').forEach(b => b.onclick = async () => {
+    SAVE.activeTitle = b.dataset.n; await saveGame(); d.remove(); renderSelect(); SFX.ui();
+  });
+  d.querySelector('#tClose').onclick = () => d.remove();
 };
 
 $('#btnHow').onclick = () => {
