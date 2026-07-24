@@ -90,6 +90,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .seg{display:flex;border:1px solid var(--edge);border-radius:2px;overflow:hidden;flex:none}
 .seg button{padding:6px 11px;font-family:var(--disp);font-weight:600;font-size:12px;letter-spacing:.08em;color:var(--dust)}
 .seg button[aria-pressed="true"]{background:var(--hazard);color:#12100E}
+.ttsrow{display:flex;align-items:center;gap:7px;flex:none}
+.ttest{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;color:var(--bio);
+  border:1px solid rgba(79,168,142,.45);padding:6px 9px;border-radius:2px;white-space:nowrap}
+.ttest:active{background:rgba(79,168,142,.18)}
 
 /* ---------- cutscene ---------- */
 #cine{padding:0;justify-content:flex-end;background:#000}
@@ -693,7 +697,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
         <div class="opt"><span>ゾンビの速さ</span><div class="seg" data-set="speed"><button data-v="slow">ゆっくり</button><button data-v="normal">標準</button><button data-v="fast">速い</button></div></div>
         <div class="opt"><span>文字数ヒント</span><div class="seg" data-set="dots"><button data-v="on">表示</button><button data-v="off">なし</button></div></div>
         <div class="opt"><span>日本語訳</span><div class="seg" data-set="jp"><button data-v="on">表示</button><button data-v="off">なし</button></div></div>
-        <div class="opt"><span>正解後に発音を再生</span><div class="seg" data-set="tts"><button data-v="on">する</button><button data-v="off">しない</button></div></div>
+        <div class="opt"><span>正解後に発音を再生</span><div class="ttsrow"><button class="ttest" id="btnTts">▶ 試聴</button><div class="seg" data-set="tts"><button data-v="on">する</button><button data-v="off">しない</button></div></div></div>
         <div class="opt"><span>効果音</span><div class="seg" data-set="sfx"><button data-v="on">あり</button><button data-v="off">なし</button></div></div>
         <div class="opt"><span>ストーリー演出</span><div class="seg" data-set="story"><button data-v="on">再生</button><button data-v="off">省略</button></div></div>
         <div class="opt"><span>発音判定の甘さ</span><div class="seg" data-set="judge"><button data-v="normal">標準</button><button data-v="soft">甘め</button><button data-v="very">かなり甘め</button></div></div>
@@ -1884,13 +1888,72 @@ const SFX = (() => {
   };
 })();
 
-function say(word) {
-  if (CFG.tts !== 'on' || !window.speechSynthesis) return;
+/* ---------- 単語の読み上げ ----------
+   iOS Safari は
+     (1) 最初の speak() が必ずユーザー操作の中で呼ばれていないと以降すべて無音になる
+     (2) 音声認識が動いている間は録音セッションを握るため読み上げが出ない
+     (3) cancel() の直後の speak() を取りこぼす
+   の三点があるため、それぞれに対処する。 */
+const IS_IOS = /iP(hone|ad|od)/.test(navigator.userAgent) ||
+               (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+let ttsReady = false, ttsVoice = null;
+
+function pickVoice() {
+  // getVoices を持たない／例外を投げる環境があるので、ここで落ちないようにする
   try {
-    const u = new SpeechSynthesisUtterance(word);
-    u.lang = 'en-US'; u.rate = .9;
-    speechSynthesis.cancel(); speechSynthesis.speak(u);
+    const sp = window.speechSynthesis;
+    const vs = (sp && typeof sp.getVoices === 'function' && sp.getVoices()) || [];
+    ttsVoice = vs.find(v => /^en[-_]US/i.test(v.lang) && v.localService)
+            || vs.find(v => /^en[-_]US/i.test(v.lang))
+            || vs.find(v => /^en/i.test(v.lang)) || null;
+  } catch (e) { ttsVoice = null; }
+}
+if (window.speechSynthesis) {
+  pickVoice();
+  try { speechSynthesis.onvoiceschanged = pickVoice; } catch (e) {}
+}
+
+/* 最初のタップで音声合成とWeb Audioを起こす（iOSはこれが無いと一切鳴らない） */
+function unlockAudio() {
+  try { SFX.unlock(); } catch (e) {}
+  if (ttsReady || !window.speechSynthesis) return;
+  try {
+    const u = new SpeechSynthesisUtterance('.');
+    u.volume = 0; u.rate = 10; u.lang = 'en-US';
+    speechSynthesis.speak(u);
+    ttsReady = true;
+    pickVoice();
   } catch (e) {}
+}
+['pointerdown', 'touchend', 'click'].forEach(ev =>
+  document.addEventListener(ev, unlockAudio, { once: true, capture: true }));
+
+let sayTimer = 0;
+function say(word, opts) {
+  const force = opts && opts.force;                 // ボタンから直接鳴らす場合
+  if (!word || !window.speechSynthesis) return;
+  if (CFG.tts !== 'on' && !force) return;
+  // iOS は認識中に読み上げが出ないので、いったん止めて読み上げ後に戻す
+  const resume = IS_IOS && recWant && CFG.input === 'voice' && !force;
+  if (resume) stopRec();
+
+  const done = () => {
+    clearTimeout(sayTimer); sayTimer = 0;
+    if (resume && G.running && CFG.input === 'voice' && !recWant) startRec();
+  };
+  try {
+    speechSynthesis.cancel();
+    try { speechSynthesis.resume(); } catch (e) {}
+    const u = new SpeechSynthesisUtterance(word);
+    u.lang = 'en-US'; u.rate = .9; u.pitch = 1; u.volume = 1;
+    if (ttsVoice) u.voice = ttsVoice;
+    u.onend = done; u.onerror = done;
+    // cancel() 直後の speak() を落とす端末があるので一拍置く
+    setTimeout(() => { try { speechSynthesis.speak(u); } catch (e) { done(); } }, IS_IOS ? 90 : 20);
+    // onend が来ない端末に備えた保険
+    clearTimeout(sayTimer);
+    sayTimer = setTimeout(done, 900 + word.length * 110);
+  } catch (e) { done(); }
 }
 
 /* ---------- cutscene ---------- */
@@ -2122,7 +2185,11 @@ function startRec() {
   if (!SRC) { notice('<b>このブラウザは音声入力に対応していません。</b>Android は Chrome、iPhone は Safari をお試しください。キーボード入力に切り替えました。'); setMode('type'); return; }
   if (!rec) rec = buildRec();
   recWant = true;
-  try { rec.start(); } catch (e) {}
+  // 停止処理が終わりきる前の start() は例外になるので数回試す
+  (function tryStart(n) {
+    try { rec.start(); }
+    catch (e) { if (n > 0 && recWant) setTimeout(() => tryStart(n - 1), 320); }
+  })(3);
 }
 function stopRec() { recWant = false; try { rec && rec.stop(); } catch (e) {} $('#wave').classList.remove('live'); clearGhost(); }
 /* 認識途中の声をホログラムとして表示する */
@@ -2155,6 +2222,7 @@ function setMode(m) {
     if (G.running) startRec();
   }
 }
+$('#btnTts').onclick = () => { unlockAudio(); say('resonance', { force: true }); };
 $('#btnMode').onclick = () => setMode(CFG.input === 'voice' ? 'type' : 'voice');
 $('#typein').addEventListener('input', e => {
   if (!G.running || G.locked) return;
@@ -2577,14 +2645,14 @@ async function endStage(survived) {
           <button class="say" data-w="${escapeHtml(a)}">▶</button></div>`;
       }).join('')
     : `<h3>取り逃しなし</h3><div class="muted" style="font-size:12px">全語を発音で浄化。</div>`;
-  $$('#rRev .say').forEach(b => b.onclick = () => say(b.dataset.w));
+  $$('#rRev .say').forEach(b => b.onclick = () => say(b.dataset.w, { force: true }));
   $('#btnNext').style.display = (survived && !G.review && !G.daily && n < 12) ? '' : 'none';
   $('#btnRetry').style.display = G.daily ? 'none' : '';
   show('result');
 }
 
 /* ---------- wiring ---------- */
-$('#btnStart').onclick = () => { SFX.unlock(); renderSelect(); show('select'); };
+$('#btnStart').onclick = () => { unlockAudio(); renderSelect(); show('select'); };
 $('#btnHome').onclick = () => { renderSelect(); show('select'); };
 $('#btnRetry').onclick = () => startStage(G.stage, G.review);
 $('#btnNext').onclick = () => beginStage(Math.min(12, G.stage + 1));
