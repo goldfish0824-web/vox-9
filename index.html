@@ -838,7 +838,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
         <div class="opt"><span>環境音（BGM）</span><div class="seg" data-set="bgm"><button data-v="on">あり</button><button data-v="off">なし</button></div></div>
         <div class="opt"><span>効果音</span><div class="seg" data-set="sfx"><button data-v="on">あり</button><button data-v="off">なし</button></div></div>
         <div class="opt"><span>ストーリー演出</span><div class="seg" data-set="story"><button data-v="on">再生</button><button data-v="off">省略</button></div></div>
-        <div class="opt"><span>発音判定の甘さ</span><div class="seg" data-set="judge"><button data-v="normal">標準</button><button data-v="soft">甘め</button><button data-v="very">かなり甘め</button></div></div>
+        <div class="opt"><span>発音判定の甘さ<br><span class="muted" style="font-size:11px">区画01〜06は自動でさらに甘くなります</span></span><div class="seg" data-set="judge"><button data-v="normal">標準</button><button data-v="soft">甘め</button><button data-v="very">かなり甘め</button></div></div>
         <div class="opt"><span>1区画の出題数</span><div class="seg" data-set="count"><button data-v="10">10</button><button data-v="20">20</button><button data-v="100">全部</button></div></div>
       </div>
       <div class="danger">
@@ -1906,14 +1906,112 @@ function onsetOK(a, b) {
 
 /* 判定の甘さ。g=頭の音が違ってもよい水準、l*=綴りの近さ、p*=音の近さ、数字は語の長さ */
 const LEVELS = {
-  normal: { g: .93, l8: .80, p8: .85, l5: .85, p5: .86, l4: .80, p4: .85, l3: .75 },
-  soft:   { g: .92, l8: .75, p8: .78, l5: .76, p5: .80, l4: .72, p4: .76, l3: .66 },
-  very:   { g: .86, l8: .66, p8: .70, l5: .66, p5: .70, l4: .62, p4: .66, l3: .56 }
+  normal: { g: .93, l8: .80, p8: .85, l5: .85, p5: .86, l4: .80, p4: .85, l3: .75, l2: .90 },
+  soft:   { g: .92, l8: .75, p8: .78, l5: .76, p5: .80, l4: .72, p4: .76, l3: .66, l2: .80 },
+  very:   { g: .86, l8: .66, p8: .70, l5: .66, p5: .70, l4: .62, p4: .66, l3: .56, l2: .70 },
+  ultra:  { g: .80, l8: .58, p8: .62, l5: .56, p5: .60, l4: .52, p4: .56, l3: .46, l2: .56 }
 };
+
+/* 区画1〜6（No.1〜600）は go / do / see のような短い基本語が多く、
+   音声認識が別語に化けやすい。ここでは設定より甘い水準を自動で使う。
+   ただし同じ区画に並ぶ別の見出し語（walk と work など）だけは、
+   取り違えを見逃さないよう、設定どおりの厳しさのまま判定する。 */
+const EASY_MAX_NO = 600;
+const EASY_UP = { normal: 'very', soft: 'ultra', very: 'ultra', ultra: 'ultra' };
+let EASY_JUDGE = false;
+function setEasyJudge(v) { EASY_JUDGE = !!v; }
+function setEasyByWord(row) { setEasyJudge(!!row && +row[0] <= EASY_MAX_NO); }
+
+/* 母音は聞き取りが最も揺れる。母音をひとまとめにした骨格で比べると
+   do/due/dew、write/right、hear/here、sell/sail が同じ形になる。 */
+function vkey(x) {
+  return phon(x).replace(/[aeiouy]+/g, 'a').replace(/(.)\1+/g, '$1').replace(/a$/, '');
+}
+/* 頭が母音同士のときも入れ替わりを許す（区画1〜6のみ） */
+function onsetEZ(a, b) { return onsetOK(a, b) || (VOW.has(a) && VOW.has(b)); }
+
+/* 音声認識がよく返す聞き違い。正解語 → 通してよい聞き取り結果 */
+const HOMO = (() => {
+  const src = {
+    go: 'google,gogo,goh,goe,gou,goal',
+    do: 'due,dew,doo,doe,du,dou',
+    see: 'c,cee,sii,seed',
+    eat: 'e,eet,ete,ate,it',
+    put: 'foot,putt,poot,pud',
+    buy: 'bye,by,bi,bai',
+    pay: 'pei,pai',
+    say: 'sei,sai',
+    fly: 'flight,fri,frai',
+    try: 'trai,trie',
+    die: 'dai,dy',
+    tie: 'tai,ty',
+    lie: 'lai,ly',
+    lay: 'lei,rei',
+    key: 'ki,kee,quay',
+    way: 'wei,whey,weigh',
+    why: 'y,wai,whai',
+    how: 'hau,ha',
+    new: 'nu,gnu,knew,nyu',
+    old: 'ould,oald',
+    air: 'ea,eah,ear',
+    sky: 'ski,sci,sukai',
+    win: 'wynn,wing',
+    use: 'yuse,yous,juice',
+    know: 'no,noh,nou',
+    hear: 'here,hia',
+    write: 'right,rite,wright,rait',
+    read: 'red,reed,rid',
+    sell: 'cell,sail,sale',
+    meet: 'meat,mete',
+    week: 'weak,wick',
+    weak: 'week',
+    son: 'sun,sung',
+    sun: 'son',
+    hour: 'our,are',
+    too: 'to,two,tu',
+    ago: 'agou,agoo',
+    wear: 'where,were,ware',
+    break: 'brake',
+    close: 'clothes,cloz,klous',
+    hold: 'hould',
+    catch: 'cash,ketch,kyatchi',
+    laugh: 'laf,lof',
+    heart: 'hart',
+    nose: 'knows,nouz',
+    plane: 'plain',
+    rain: 'reign,rein',
+    road: 'rode,rowed',
+    piece: 'peace',
+    peace: 'piece',
+    steal: 'steel',
+    tail: 'tale',
+    night: 'knight,nite',
+    high: 'hi,hai',
+    which: 'witch,wich',
+    weather: 'whether',
+    hair: 'hare',
+    blue: 'blew',
+    flowers: 'flours',
+    poor: 'pour,pore',
+    eight: 'ate',
+    through: 'threw,thru,tru',
+    wood: 'would',
+    choose: 'chews,shoes,chose',
+    clean: 'klean,kurin',
+    answer: 'ansa,anser',
+    light: 'lite',
+    war: 'wor'
+  };
+  const m = {};
+  for (const k in src) m[norm(k)] = new Set(src[k].split(',').map(norm).filter(Boolean));
+  return m;
+})();
 
 /** returns {ok:boolean, near:number} */
 function judge(text, answers) {
-  const L = LEVELS[(typeof CFG !== 'undefined' && CFG.judge) || 'soft'] || LEVELS.soft;
+  const base = (typeof CFG !== 'undefined' && CFG.judge) || 'soft';
+  const LB = LEVELS[base] || LEVELS.soft;
+  const LE = EASY_JUDGE ? (LEVELS[EASY_UP[base]] || LB) : LB;
   const cands = candidates(text);
   if (!cands.length) return { ok: false, near: 0 };
   const hit = { ok: true, near: 1 };
@@ -1922,8 +2020,15 @@ function judge(text, answers) {
     const A = norm(raw);
     if (!A) continue;
     const vars = variantsOf(A), pA = phon(A), n = A.length;
+    const kA = EASY_JUDGE ? vkey(A) : '';
+    const alias = EASY_JUDGE ? HOMO[A] : null;
     for (const c of cands) {
       if (vars.has(c)) return hit;
+      /* 同じ区画に並ぶ別の見出し語は、甘さを上げずに設定どおりで見る */
+      const rival = EASY_JUDGE && POOL_WORDS.has(c);
+      const easy = EASY_JUDGE && !rival;
+      const L = easy ? LE : LB;
+
       if (n >= 3 && phon(c) === pA) return hit;
       // 頭の音がひとつ落ちた／増えた聞き取り（hear→ear など）
       if (n >= 4 && (c === A.slice(1) || A === c.slice(1))) return hit;
@@ -1931,14 +2036,28 @@ function judge(text, answers) {
       if (n >= 5 && c.length >= 4 && (A.startsWith(c) || c.startsWith(A)) &&
           Math.min(c.length, n) / Math.max(c.length, n) >= .7) return hit;
       const s = sim(c, A), ps = sim(phon(c), pA);
-      if (s > best) best = s;
+      if (Math.max(s, ps) > best) best = Math.max(s, ps);
       if (s >= L.g || ps >= L.g) return hit;
-      if (onsetOK(c[0], A[0])) {
+      if (easy ? onsetEZ(c[0], A[0]) : onsetOK(c[0], A[0])) {
         if (n >= 8 && (s >= L.l8 || ps >= L.p8)) return hit;
         if (n >= 5 && (s >= L.l5 || ps >= L.p5)) return hit;
         if (n === 4 && (s >= L.l4 || ps >= L.p4)) return hit;
-        if (n === 3 && s >= L.l3) return hit;
+        if (n === 3 && (s >= L.l3 || (easy && ps >= L.l3))) return hit;
       }
+
+      /* ---- ここから区画1〜6だけの追加の甘さ ---- */
+      if (!easy) continue;
+      if (alias && alias.has(c)) return hit;
+      const pc = phon(c);
+      // 頭の音が落ちた／増えた（3文字語や、音の上だけで増減した場合も拾う）
+      if (n >= 3 && (c === A.slice(1) || A === c.slice(1) ||
+                     pc === pA.slice(1) || pA === pc.slice(1))) return hit;
+      if (!onsetEZ(c[0], A[0])) continue;
+      // 母音の聞き違いを許す骨格一致（do/due、write/right、hear/here）
+      const ratio = Math.min(c.length, n) / Math.max(c.length, n);
+      if (kA && ratio >= .5 && vkey(c) === kA) return hit;
+      // 2文字語は綴り・音のどちらかが近ければ通す
+      if (n <= 2 && (s >= L.l2 || ps >= L.l2)) return hit;
     }
   }
   return { ok: false, near: best };
@@ -2697,12 +2816,23 @@ function buildRec() {
     if (fin) clearGhost(); else setGhost(interim);
     setHeard(texts[0].trim(), '');
     for (const t of texts) if (judge(t, G.answers).ok) { setHeard(texts[0].trim(), 'hit'); onCorrect(); return; }
+    if (fin) G.tryCount++;
     const nr = Math.max(...texts.map(t => judge(t, G.answers).near));
-    if (nr >= .52) {
+    // 区画1〜6 は認識が揺れやすいので、惜しいとみなす幅を広げる
+    if (nr >= (EASY_JUDGE ? .45 : .52)) {
       if (fin) G.nearCount++;
       // 惜しい発音を二度重ねたら、認識側の揺れとみなして通す
       if (G.nearCount >= 2) { setHeard(texts[0].trim(), 'hit'); onCorrect(); return; }
       setHeard(texts[0].trim() + (fin ? '　…惜しい（もう一度）' : '　…惜しい'), 'near');
+      return;
+    }
+    /* 区画1〜6 の逃げ道。三度言い直しても認識が定まらないときは、
+       近い音が返っていれば認識側の限界とみなして通す */
+    if (EASY_JUDGE && fin && G.tryCount >= 3 && nr >= .34) {
+      setHeard(texts[0].trim(), 'hit'); onCorrect(); return;
+    }
+    if (EASY_JUDGE && fin && G.tryCount >= 2) {
+      setHeard(texts[0].trim() + '　…認識が不安定です（もう一度）', 'near');
     }
   };
   r.onerror = e => {
@@ -2811,7 +2941,7 @@ const SPEED = { slow: 1.4, normal: 1, fast: .74 };
 const G = {
   stage: 1, review: false, queue: [], i: 0, word: null, answers: [],
   hp: MAXHP, combo: 0, maxCombo: 0, score: 0, right: 0, tries: 0,
-  missed: [], phase: 'wave', bossHp: 3, bossTotal: 3, bossSpawned: false, nearCount: 0, daily: false,
+  missed: [], phase: 'wave', bossHp: 3, bossTotal: 3, bossSpawned: false, nearCount: 0, tryCount: 0, daily: false,
   t0: 0, dur: 0, raf: 0, running: false, locked: false, requeued: null
 };
 const durationFor = s => Math.max(7.5, 14.5 - (s - 1) * .55) * 1000 * SPEED[CFG.speed];
@@ -2890,7 +3020,7 @@ function fitBlank(chars) {
 }
 
 async function nextWord() {
-  G.locked = false; G.nearCount = 0;
+  G.locked = false; G.nearCount = 0; G.tryCount = 0;
   clearGhost();
   $('#qbox').classList.remove('right');
   gateUntil = Date.now() + 350;
@@ -2920,6 +3050,7 @@ async function nextWord() {
     : G.queue[G.i];
   G.word = row;
   G.answers = row[4].split(',');
+  setEasyByWord(row);          /* 区画1〜6（No.1〜600）は判定を甘くする */
   const ans = G.answers[0];
 
   const dots = CFG.dots === 'on' ? ' ' + '·'.repeat(Math.max(0, ans.length - 1)) : '　　';
@@ -3296,6 +3427,7 @@ function openDrill(idx) {
   const stopDrill = () => { drillWant = false; try { drillRec && drillRec.stop(); } catch (e) {} };
   const render = () => {
     const m = list[cur], a = m[4].split(',')[0];
+    setEasyByWord(m);
     d.querySelector('#dPos').textContent = `${cur + 1} / ${list.length}`;
     d.querySelector('#dWord').textContent = a;
     d.querySelector('#dPhon').textContent = (m[1] ? m[1] + ' ' : '') + a + (m[2] ? ' ' + m[2] : '');
@@ -3723,6 +3855,7 @@ function wkCheck(num, btn) {
   wkCheckNum = num;
   btn.classList.add('on');
   setPoolWords(new Set());
+  setEasyByWord(row);
   unlockAudio();
 
   let r;
@@ -3783,8 +3916,9 @@ $('#btnHow').onclick = () => {
     と出たら「<b>follow</b>」と発音します。頭文字と文字数がヒントです。</p>
     <p><b style="color:var(--hazard)">2. 近づかれる前に倒す</b><br>
     ゲージが尽きると感染体が襲いかかり、同化率が上がります。5回受けると同化されます。浄化できなかった単語は列の最後にもう一度並びます。</p>
-    <p><b style="color:var(--hazard)">3. 判定は「標準」</b><br>
-    複数形・過去形（<span class="muted">follows / followed</span>）や、認識の揺れ（<span class="muted">fallow</span> など近い音）も正解にします。</p>
+    <p><b style="color:var(--hazard)">3. 判定はゆるめ</b><br>
+    複数形・過去形（<span class="muted">follows / followed</span>）や、認識の揺れ（<span class="muted">fallow</span> など近い音）も正解にします。<br>
+    <span class="muted">区画01〜06の基本語は、設定よりさらに甘く判定します（<span class="muted">write／right</span>、<span class="muted">do／due</span>、<span class="muted">hear／here</span> のような聞き違いも正解）。言い直しても認識が定まらないときは、近い音が返っていれば通ります。ただし、同じ区画に並ぶ別の単語（<span class="muted">walk と work</span> など）は取り違えとして扱います。</span></p>
     <p><b style="color:var(--hazard)">4. マイクが使えないとき</b><br>
     「⌨ 入力切替」でキーボードに変更できます。設定からも切り替えられます。</p>
     <p class="muted" style="font-size:11.5px">※ 音声認識は Android Chrome / iOS Safari で動作します。初回はマイクの許可を求められます。区画をひとつ浄化するごとに記録が一件手に入り、事故の本当の姿が見えてきます。</p>
