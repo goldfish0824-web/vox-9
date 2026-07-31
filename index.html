@@ -1,7 +1,29 @@
 <!DOCTYPE html>
+<!--
+  ============================================================================
+  VOX-9 ／ 音声討伐
+  英単語を声に出して正しく発音し、ノイズを discharge する音声入力ゲーム
+
+  Copyright (c) 2026 Tomoaki Kito
+  https://github.com/goldfish0824-web/vox-9
+
+  This work is licensed under the Creative Commons
+  Attribution-NonCommercial-ShareAlike 4.0 International License.
+  https://creativecommons.org/licenses/by-nc-sa/4.0/
+
+  ・作者名を表示すれば、自由に利用・改変・再配布できます
+  ・営利目的での利用はできません
+  ・改変版を公開する場合は、同じライセンスで公開してください
+
+  営利利用のご相談は、上記リポジトリの Issues までお願いします。
+  ============================================================================
+-->
 <html lang="ja">
 <head>
 <meta charset="utf-8">
+<meta name="author" content="Tomoaki Kito">
+<meta name="description" content="英単語を声に出して発音し、ノイズを討伐する音声入力型の英単語ゲーム。ブラウザだけで遊べます。">
+<meta name="license" content="CC BY-NC-SA 4.0">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="theme-color" content="#0A0908">
 <title>VOX-9 ／ 音声討伐</title>
@@ -47,6 +69,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .logo em{font-style:normal;color:var(--blood)}
 .tagline{font-family:var(--disp);font-weight:700;letter-spacing:.16em;font-size:14px;color:var(--hazard);margin-top:6px}
 .subttl{font-size:12.5px;color:var(--dust);margin-top:14px;line-height:1.85}
+.credit{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;color:var(--dust);
+  opacity:.55;margin-top:22px;line-height:1.9;text-align:center}
+.credit a{color:var(--dust);text-decoration:underline;text-underline-offset:2px}
 .big{display:block;width:100%;margin-top:26px;padding:17px;font-family:var(--disp);font-weight:700;font-size:19px;letter-spacing:.18em;background:var(--blood);color:#12100E;border-radius:2px;box-shadow:0 0 0 1px rgba(232,179,58,.35),0 10px 40px rgba(176,34,28,.35)}
 .big:active{transform:translateY(1px)}
 .ghost{display:block;width:100%;margin-top:10px;padding:13px;font-family:var(--disp);font-weight:600;font-size:14px;letter-spacing:.16em;color:var(--dust);border:1px solid var(--edge);border-radius:2px}
@@ -775,6 +800,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       <p class="subttl">言語統一計画「バベル」——世界から言葉を奪う計画。<br>正しく調音された言葉だけが、ノイズを打ち消せる。</p>
       <button class="big" id="btnStart">containment 開始</button>
       <button class="ghost" id="btnHow">操作と判定について</button>
+      <div class="credit">
+        © 2026 TOMOAKI KITO<br>
+        <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.ja" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a>
+      </div>
     </div>
   </section>
 
