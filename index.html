@@ -2102,7 +2102,10 @@ const Store = (() => {
 
 const DEF = { input: 'voice', speed: 'normal', dots: 'on', jp: 'on', tts: 'on', sfx: 'on', story: 'on', judge: 'soft', count: '20' };
 let CFG = { ...DEF };
-let SAVE = { cleared: {}, best: {}, weak: [], recs: {}, pro: false };
+let SAVE = {
+  cleared: {}, best: {}, weak: [], recs: {}, pro: false,
+  dailyDate: '', titles: ['rookie'], activeTitle: '新人特掃員', dailyCount: 0, dailyStreak: 0
+};
 async function loadAll() {
   try { const a = await Store.get('vox9:cfg'); if (a) CFG = { ...DEF, ...JSON.parse(a) }; } catch (e) {}
   try {
@@ -2176,11 +2179,13 @@ const AUDIO = (() => {
     peek() { return ac; }
   };
 })();
-// iOS は音声認識の開始でオーディオが止まることがあるので見張る
-setInterval(() => {
-  const a = AUDIO.peek();
-  if (a && a.state === 'suspended') { try { a.resume(); } catch (e) {} }
-}, 4000);
+/* ※ 以前ここに「4秒ごとに AudioContext を resume する見張り」があった。
+   BGM を鳴らし続けるための処理だったが、iOS/Android は
+   「録音（音声認識）」と「再生（Web Audio）」で音声セッションを取り合うため、
+   認識が始まって OS がオーディオを止めた直後に resume すると
+   セッションを奪い返してしまい、音声認識が毎回切断されていた。
+   BGM が無くなった今は不要なので削除。効果音を鳴らす直前の
+   AUDIO.get() 内の resume だけで足りる。 */
 
 const SFX = (() => {
   function ctx() {
@@ -2299,6 +2304,10 @@ if (window.speechSynthesis) {
 let ttsKeepTimer = 0;
 function ttsPing() {
   if (!window.speechSynthesis) return;
+  if (CFG.tts !== 'on') return;          // 読み上げを使わないなら起こす必要もない
+  /* 重要：speak() は再生セッションを取りに行くので、認識中に呼ぶと
+     マイクが切れる。認識が動いている間はキープアライブを止める。 */
+  if (recWant || recReady) return;
   try {
     if (speechSynthesis.speaking || speechSynthesis.pending) return;  // 読み上げ中は触らない
     const u = new SpeechSynthesisUtterance(' ');
@@ -2329,18 +2338,33 @@ function unlockAudio() {
   document.addEventListener(ev, unlockAudio, { capture: true }));  // once を外し、毎タップで温存を保証
 
 let sayTimer = 0;
+let micPausedForTts = false;   // 読み上げのために認識を止めているか（say の呼び出しをまたいで持つ）
+
+/* 読み上げのために止めたマイクを戻す。say() が連続で呼ばれても取りこぼさないよう、
+   「誰が止めたか」ではなく「止まっているか」で判断する。 */
+function resumeMicAfterTts() {
+  if (!micPausedForTts) return;
+  micPausedForTts = false;
+  if (G.running && CFG.input === 'voice' && !recWant) startRec();
+}
 
 function say(word, opts) {
   const force = opts && opts.force;                 // ボタンから直接鳴らす場合
   if (!word || !window.speechSynthesis) return;
   if (CFG.tts !== 'on' && !force) return;
+
+  /* 読み上げた声をマイクが拾って誤判定するのを防ぐため、
+     おおよその発話時間だけ判定を止めておく（onend が来たら早めに開ける） */
+  const est = Math.min(1800, 500 + String(word).length * 90);
+  gateUntil = Math.max(gateUntil, Date.now() + est);
+
   // iOS は認識中に読み上げが出ないので、いったん止めて読み上げ後に戻す
-  const resume = IS_IOS && recWant && CFG.input === 'voice' && !force;
-  if (resume) stopRec();
+  if (IS_IOS && recWant && CFG.input === 'voice' && !force) { micPausedForTts = true; stopRec(); }
 
   const done = () => {
     clearTimeout(sayTimer); sayTimer = 0;
-    if (resume && G.running && CFG.input === 'voice' && !recWant) startRec();
+    gateUntil = Math.min(gateUntil, Date.now() + 200);
+    resumeMicAfterTts();
   };
   const speakNow = () => {
     try {
@@ -2544,8 +2568,15 @@ function renderSelect() {
 }
 $$('.seg').forEach(seg => seg.addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
-  CFG[seg.dataset.set] = b.dataset.v; saveCfg();
-  if (seg.dataset.set === 'judge') setJudgeLevel(CFG.judge);
+  const k = seg.dataset.set;
+  if (k === 'input') {
+    // 入力方式は setMode を通さないと、マイクの開始／停止と表示が食い違う
+    setMode(b.dataset.v === 'type' ? 'type' : 'voice');
+  } else {
+    CFG[k] = b.dataset.v; saveCfg();
+  }
+  if (k === 'judge') setJudgeLevel(CFG.judge);
+  if (k === 'sfx' && CFG.sfx === 'on') SFX.ui();
   renderSelect();
 }));
 
@@ -2614,7 +2645,10 @@ function buildRec() {
       recWant = false; notice('<b>マイクが使えません。</b>ブラウザのマイク許可を確認してください。キーボード入力に切り替えました。'); setMode('type');
     } else if (e.error === 'audio-capture') {
       recWant = false; notice('<b>マイクが見つかりません。</b>キーボード入力に切り替えました。'); setMode('type');
+    } else if (e.error === 'network') {
+      notice('<b>音声認識サーバーに接続できませんでした。</b>通信状況を確認してください。再接続を試みます。');
     }
+    // no-speech / aborted は正常な範囲。onend の再起動にまかせる
   };
   r.onend = () => {
     recReady = false; $('#wave').classList.remove('live');
@@ -2625,14 +2659,30 @@ function buildRec() {
 function startRec() {
   if (!SRC) { notice('<b>このブラウザは音声入力に対応していません。</b>Android は Chrome、iPhone は Safari をお試しください。キーボード入力に切り替えました。'); setMode('type'); return; }
   if (!rec) rec = buildRec();
+  if (recWant && recReady) return;          // すでに聞いているなら二重に start しない
   recWant = true;
   // 停止処理が終わりきる前の start() は例外になるので数回試す
   (function tryStart(n) {
+    if (!recWant) return;
     try { rec.start(); }
-    catch (e) { if (n > 0 && recWant) setTimeout(() => tryStart(n - 1), 320); }
+    catch (e) { if (n > 0) setTimeout(() => tryStart(n - 1), 320); }
   })(3);
 }
 function stopRec() { recWant = false; try { rec && rec.stop(); } catch (e) {} $('#wave').classList.remove('live'); clearGhost(); }
+
+/* 保険：本来 onend で復帰するが、端末によっては onend も onerror も来ずに
+   マイクだけ黙ることがある。「聞いているはずなのに聞いていない」状態が
+   続いたら静かに立て直す。 */
+let recDownSince = 0;
+setInterval(() => {
+  if (!recWant || !rec) { recDownSince = 0; return; }
+  if (recReady) { recDownSince = 0; return; }
+  if (document.visibilityState !== 'visible') return;
+  if (!recDownSince) recDownSince = Date.now();
+  try { rec.start(); } catch (e) {}
+  // 立ち上がらないまま数秒たったら、黙って固まらずに状態を出す
+  if (G.running && Date.now() - recDownSince > 4000) setHeard('マイクを起動しています…', '');
+}, 1600);
 /* 認識途中の声をホログラムとして表示する */
 function setGhost(t) {
   const el = $('#ghostText');
@@ -2760,7 +2810,8 @@ function beginRun(opt) {
   $('#pStg').textContent = opt.label;
   $('#bLabel').textContent = 'DISTANCE TO BREACH';
   show('play');
-  if (CFG.input === 'voice') startRec(); else setMode('type');
+  gateUntil = 0; micPausedForTts = false;
+  setMode(CFG.input);          // 入力欄の表示・ボタン表記・マイク開始をまとめて揃える
   nextWord();
 }
 
@@ -2796,7 +2847,8 @@ async function nextWord() {
   G.locked = false; G.nearCount = 0; G.tryCount = 0;
   clearGhost();
   $('#qbox').classList.remove('right');
-  gateUntil = Date.now() + 350;
+  // 直前の読み上げが続いているときは、そちらが終わるまで待つ（自分の声で誤判定しないため）
+  gateUntil = Math.max(gateUntil, Date.now() + 350);
   if (G.hp <= 0) return endStage(false);
 
   /* タイムアタックは列を切らさない。ボス戦にも入らない */
@@ -2813,7 +2865,7 @@ async function nextWord() {
     $('#bLabel').textContent = 'BOSS · ' + st.boss;
     $('#arena').classList.add('boss');
     if (CFG.input === 'voice') startRec();
-    gateUntil = Date.now() + 350;
+    gateUntil = Math.max(gateUntil, Date.now() + 350);
   }
   if (G.phase === 'boss' && G.bossHp <= 0) return endStage(true);
 
@@ -3070,11 +3122,11 @@ async function endStage(survived) {
         <div class="tg">デイリー特務 完了</div>
         <div class="td">連続 ${SAVE.dailyStreak} 日 ／ 通算 ${SAVE.dailyCount} 回</div>
         ${gained.length ? gained.map(t => `<div class="tg" style="font-size:19px;margin-top:12px">称号「${escapeHtml(t.name)}」を獲得</div><div class="td">${escapeHtml(t.desc)}</div>`).join('') : ''}
-        <div class="tnow">現在の称号：${escapeHtml(SAVE.activeTitle)}</div></div>`
+        <div class="tnow">現在の称号：${escapeHtml(SAVE.activeTitle || '新人特掃員')}</div></div>`
     : (gained.length
         ? `<div class="tgain"><div class="rk">TITLE UNLOCKED</div>
             ${gained.map(t => `<div class="tg">称号「${escapeHtml(t.name)}」を獲得</div><div class="td">${escapeHtml(t.desc)}</div>`).join('')}
-            <div class="tnow">現在の称号：${escapeHtml(SAVE.activeTitle)}</div></div>`
+            <div class="tnow">現在の称号：${escapeHtml(SAVE.activeTitle || '新人特掃員')}</div></div>`
         : '');
 
   $('#rEye').textContent = G.daily ? 'Daily mission — debrief'
@@ -3309,7 +3361,8 @@ function startTA() {
   $('#taCombo').textContent = '';
   renderEgo();
   show('play');
-  if (CFG.input === 'voice') startRec(); else setMode('type');
+  gateUntil = 0; micPausedForTts = false;
+  setMode(CFG.input);
   clearInterval(G.ta.timer);
   G.ta.timer = setInterval(taClock, 100);
   nextWord();
