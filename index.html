@@ -697,6 +697,70 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .drill-row .big,.drill-row .ghost{flex:1}
 .dmic{color:var(--bio);border-color:rgba(79,168,142,.45)}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.001s!important;animation-iteration-count:1!important;transition-duration:.05s!important}}
+
+/* ---- 追加：タイムアタック / マイク診断 / 苦手単語一覧 ---- */
+.tabar{display:none;align-items:center;gap:10px;padding:8px 12px 4px}
+#play.ta-on .tabar{display:flex}
+#play.ta-on .breach .breachtop #bLabel{opacity:.5}
+.tabar .tanum{font-family:var(--disp);font-size:26px;line-height:1;color:var(--bio)}
+.tabar .tauni{font-size:10px;letter-spacing:.14em;color:var(--dim);margin-left:-4px}
+.tabar .tacb{font-family:var(--mono);font-size:12px;color:var(--hazard);min-width:34px}
+.tabar .tatrack{flex:1;height:7px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
+  border-radius:2px;overflow:hidden}
+.tabar .tafill{height:100%;width:100%;background:linear-gradient(90deg,var(--bio),#9BE8B0);
+  transition:width .1s linear}
+.tabar.crit .tafill{background:linear-gradient(90deg,var(--blood),#FF8A6B)}
+.tabar .tasec{font-family:var(--mono);font-size:13px;min-width:56px;text-align:right;color:var(--bone)}
+.tabar.crit .tasec{color:var(--blood)}
+
+.taopt{margin-top:14px;border:1px solid rgba(255,255,255,.1);border-radius:3px;padding:12px}
+.taopt .opt{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 0;font-size:13px}
+.tabest{margin-top:14px;border:1px solid rgba(255,255,255,.12);border-radius:3px;padding:14px;
+  background:rgba(255,255,255,.03)}
+.tabest .cap{font-size:10px;letter-spacing:.18em;color:var(--dim);text-transform:uppercase}
+.tabest .num{font-family:var(--disp);font-size:44px;line-height:1.05;color:var(--bio)}
+.tabest .num span{font-size:14px;color:var(--dim);margin-left:6px;letter-spacing:.1em}
+.tagraph{margin-top:10px;height:56px}
+.tagraph svg{width:100%;height:56px;display:block}
+.tagraph .empty{font-size:11.5px;color:var(--dim);padding:18px 0;text-align:center}
+.talast{margin-top:14px;border:1px solid var(--bio);border-radius:3px;padding:12px 14px;
+  background:rgba(122,214,148,.07)}
+.talast .top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.talast .big{font-family:var(--disp);font-size:32px;line-height:1;color:var(--bio)}
+.talast .big span{font-size:12px;color:var(--dim);margin-left:6px}
+.talast .new{font-size:11px;letter-spacing:.12em;color:var(--hazard);border:1px solid var(--hazard);
+  border-radius:2px;padding:3px 7px}
+.talast .sub{display:flex;gap:14px;flex-wrap:wrap;margin-top:9px;font-size:11.5px;color:var(--dim)}
+.talast .sub b{color:var(--bone);font-family:var(--mono)}
+
+#taStgSeg{flex-wrap:wrap;max-width:220px;justify-content:flex-end}
+#taStgSeg button{flex:0 0 auto;padding:6px 8px;font-size:11px}
+.taopt .seg{flex-wrap:wrap}
+.dgtable{margin-top:14px;border:1px solid rgba(255,255,255,.1);border-radius:3px;overflow:hidden}
+.dgrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 13px;
+  font-size:13px;border-bottom:1px solid rgba(255,255,255,.07)}
+.dgrow:last-child{border-bottom:0}
+.dgrow b{font-family:var(--mono);font-size:12px;color:var(--dim)}
+.dgrow b.ok{color:var(--bio)} .dgrow b.ng{color:var(--blood)}
+.dghint{margin-top:12px;font-size:12.5px;line-height:1.9;color:var(--bone)}
+.dgres{margin-top:12px;font-size:12.5px;line-height:1.95;padding:12px 13px;border-radius:3px;
+  border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);min-height:0}
+.dgres:empty{display:none}
+.dgres.ok{border-color:var(--bio);background:rgba(122,214,148,.08)}
+.dgres.ng{border-color:var(--blood);background:rgba(200,74,52,.08)}
+#btnDiagMic.rec{border-color:var(--blood);color:var(--blood)}
+
+.wkitem{display:flex;align-items:center;gap:9px;padding:10px 11px;border:1px solid rgba(255,255,255,.09);
+  border-radius:3px;margin-bottom:8px;background:rgba(255,255,255,.02)}
+.wkitem.done{opacity:.4}
+.wkbody{flex:1;min-width:0}
+.wken{font-family:var(--mono);font-size:15px;color:var(--bone)}
+.wkjp{font-size:11.5px;color:var(--dim);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wkbtn{flex:0 0 auto;width:38px;height:38px;border-radius:3px;border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.04);color:var(--bone);font-size:15px;cursor:pointer}
+.wkbtn:active{transform:scale(.94)}
+.wkbtn.on{border-color:var(--blood);color:var(--blood)}
+.wkempty{font-size:12.5px;color:var(--dim);padding:26px 0;text-align:center}
 </style>
 </head>
 <body>
@@ -728,8 +792,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       </button>
       <div class="grid" id="stageGrid"></div>
       <div class="row">
-        <button class="ghost" id="btnReview">苦手単語で復習（<span id="revCount">0</span>）</button>
+        <button class="ghost" id="btnReview">苦手単語（<span id="revCount">0</span>）</button>
         <button class="ghost" id="btnArchive">記録アーカイブ（<span id="recCount">0</span>/12）</button>
+      </div>
+      <div class="row">
+        <button class="ghost" id="btnTa">タイムアタック</button>
+        <button class="ghost" id="btnDiag">マイクの確認</button>
       </div>
       <div class="set">
         <h3>Settings</h3>
@@ -776,6 +844,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       <div class="ego" id="pHp"></div>
     </div>
     <div class="tape thin"></div>
+    <div class="tabar" id="taBar">
+      <span class="tanum" id="taCount">0</span><span class="tauni">WORDS</span>
+      <span class="tacb" id="taCombo"></span>
+      <span class="tatrack"><i class="tafill" id="taFill"></i></span>
+      <span class="tasec" id="taSec">--</span>
+    </div>
     <div class="reso" id="reso">
       <span class="rnum" id="rNum">×0</span>
       <span class="rmeter"><i id="rFill"></i></span>
@@ -831,6 +905,70 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       </div>
       <button class="ghost" id="btnHome">区画選択に戻る</button>
       <div style="height:24px"></div>
+    </div>
+  </section>
+
+  <section class="screen" id="ta">
+    <div class="hdr">
+      <div><div class="eyebrow">Time attack</div><h1>制限時間走</h1></div>
+      <button class="ghost" id="btnTaBack" style="padding:8px 12px">戻る</button>
+    </div>
+    <div class="tape thin" style="margin-top:10px"></div>
+    <div class="scroller">
+      <div id="taLast"></div>
+      <div class="tabest">
+        <div class="cap">この条件の自己ベスト</div>
+        <div class="num"><b id="taBestNum">—</b><span>WORDS</span></div>
+        <div class="tagraph" id="taGraph"></div>
+      </div>
+      <div class="taopt">
+        <div class="opt"><span>制限時間</span>
+          <div class="seg" id="taSecSeg"><button data-v="30">30秒</button><button data-v="60">60秒</button><button data-v="120">120秒</button></div>
+        </div>
+        <div class="opt"><span>出題範囲</span>
+          <div class="seg" id="taRangeSeg"><button data-v="all">全体</button><button data-v="weak">苦手</button><button data-v="sec">区画別</button></div>
+        </div>
+        <div class="opt" id="taSecRow" style="display:none"><span>区画</span>
+          <div class="seg" id="taStgSeg"></div>
+        </div>
+      </div>
+      <button class="big" id="btnTaStart" style="margin-top:16px">開始する</button>
+      <p class="dnote" style="margin-top:12px">制限時間内に何語 浄化できるかに挑戦します。EGO は減りません。<br>言えなかった単語は苦手単語に記録されます。</p>
+      <div style="height:20px"></div>
+    </div>
+  </section>
+
+  <section class="screen" id="diag">
+    <div class="hdr">
+      <div><div class="eyebrow">Audio check</div><h1>マイクの確認</h1></div>
+      <button class="ghost" id="btnDiagBack" style="padding:8px 12px">戻る</button>
+    </div>
+    <div class="tape thin" style="margin-top:10px"></div>
+    <div class="scroller">
+      <div class="dgtable" id="diagTable"></div>
+      <p class="dghint" id="diagHint"></p>
+      <button class="big" id="btnDiagMic" style="margin-top:6px">マイクを試す</button>
+      <div class="dgres" id="diagResult"></div>
+      <p class="dnote" style="margin-top:14px">うまくいかないときは、設定で「環境音」と「効果音」を なし にすると動くことがあります。<br>それでも駄目なら、キーボード入力でも遊べます。</p>
+      <div style="height:20px"></div>
+    </div>
+  </section>
+
+  <section class="screen" id="weak">
+    <div class="hdr">
+      <div><div class="eyebrow">Weak words</div><h1>苦手単語</h1></div>
+      <button class="ghost" id="btnWkBack" style="padding:8px 12px">戻る</button>
+    </div>
+    <div class="tape thin" style="margin-top:10px"></div>
+    <div class="scroller">
+      <p class="dnote" id="wkNote" style="margin-bottom:12px"></p>
+      <div class="row">
+        <button class="ghost" id="btnWkStart">まとめて練習する</button>
+        <button class="ghost" id="btnWkClear">リストを空にする</button>
+      </div>
+      <div id="wkList" style="margin-top:14px"></div>
+      <p class="dnote" style="margin-top:10px">🔊 でお手本の発音、🎤 でその場の発音チェックができます。<br>正しく言えた単語はリストから消えます。</p>
+      <div style="height:20px"></div>
     </div>
   </section>
 
@@ -2681,6 +2819,8 @@ function beginRun(opt) {
   G.queue = opt.list; G.i = 0; G.hp = MAXHP; G.combo = 0; G.maxCombo = 0; G.score = 0;
   G.right = 0; G.tries = 0; G.missed = []; G.requeued = new Set();
   G.phase = 'wave'; G.bossHp = 3; G.bossTotal = 3; G.bossSpawned = false; G.running = true; G.locked = false;
+  if (G.ta) { clearInterval(G.ta.timer); G.ta = null; }
+  $('#play').classList.remove('ta-on');
   $('#arena').classList.remove('boss', 'low', 'resonance');
   updateReso(false);
   setPoolWords(new Set((opt.guard || opt.list).flatMap(r => r[4].split(',')).map(a => norm(a)).filter(Boolean)));
@@ -2727,6 +2867,8 @@ async function nextWord() {
   gateUntil = Date.now() + 350;
   if (G.hp <= 0) return endStage(false);
 
+  /* タイムアタックは列を切らさない。ボス戦にも入らない */
+  if (G.ta && G.i >= G.queue.length) taRefill();
   if (G.phase === 'wave' && G.i >= G.queue.length) {
     if (G.review || G.daily) return endStage(true);
     G.phase = 'boss';
@@ -2772,7 +2914,9 @@ async function nextWord() {
   if (G.phase === 'boss') {
     $('#pCnt').innerHTML = `<span class="bosshp">BOSS ${'\u25CF'.repeat(G.bossHp)}<span class="dim">${'\u25CF'.repeat(G.bossTotal - G.bossHp)}</span></span>`;
   } else {
-    $('#pCnt').textContent = `${Math.min(G.i + 1, G.queue.length)} / ${G.queue.length}`;
+    $('#pCnt').textContent = G.ta
+      ? `${G.right} 語`
+      : `${Math.min(G.i + 1, G.queue.length)} / ${G.queue.length}`;
   }
   renderEgo();
   if (CFG.input === 'type') { $('#typein').value = ''; $('#typein').focus(); }
@@ -2780,7 +2924,7 @@ async function nextWord() {
   $('#meterFill').style.right = '100%';
   $('#meter').classList.remove('crit');
   $('#bPct').textContent = '100%';
-  G.dur = durationFor(G.stage) * (G.phase === 'boss' ? .8 : 1);
+  G.dur = G.ta ? TA_WORD_LIMIT : durationFor(G.stage) * (G.phase === 'boss' ? .8 : 1);
   G.t0 = performance.now();
   cancelAnimationFrame(G.raf);
   G.raf = requestAnimationFrame(tick);
@@ -2897,11 +3041,12 @@ function onCorrect() {
   clearGhost();
   purifyFx(G.combo); SFX.kill(over); say(ans);
   if (over) flashScreen();
-  if (G.review || G.daily) {
+  if (G.review || G.daily || G.ta) {
     const k = SAVE.weak.indexOf(G.word[0]);
     if (k >= 0) { SAVE.weak.splice(k, 1); saveGame(); }
   }
   if (G.phase === 'boss') G.bossHp--; else G.i++;
+  if (G.ta) { taHud(); setTimeout(nextWord, 460); return; }
   setTimeout(nextWord, 940);
 }
 
@@ -2921,13 +3066,15 @@ function onFail() {
   SFX.growl();
 
   setTimeout(() => {
-    G.hp--;
-    renderEgo(G.hp);
+    if (!G.ta) {
+      G.hp--;
+      renderEgo(G.hp);
+      $('#arena').classList.toggle('low', G.hp > 0 && G.hp <= 2);
+      BGM.danger(G.hp > 0 && G.hp <= 2);
+    }
     SFX.hit();
     $('#arena').classList.add('shake');
     noiseFx();
-    $('#arena').classList.toggle('low', G.hp > 0 && G.hp <= 2);
-    BGM.danger(G.hp > 0 && G.hp <= 2);
     fitBlank(ans.length + 1);
     $('#qBlank').innerHTML = `<span style="color:var(--blood)">${ans.toUpperCase()}</span>`;
     setHeard('—', '');
@@ -2937,6 +3084,7 @@ function onFail() {
 
   if (!G.missed.some(m => m[0] === G.word[0])) G.missed.push(G.word);
   if (!SAVE.weak.includes(G.word[0])) { SAVE.weak.push(G.word[0]); saveGame(); }
+  if (G.ta) { G.i++; taHud(); setTimeout(nextWord, 1500); return; }
   if (G.phase === 'wave') {
     G.i++;
     if (!G.requeued.has(G.word[0])) { G.requeued.add(G.word[0]); G.queue.push(G.word); }
@@ -2946,6 +3094,7 @@ function onFail() {
 
 /* ---------- debrief ---------- */
 async function endStage(survived) {
+  if (G.ta) return endTA();
   G.running = false; cancelAnimationFrame(G.raf); stopRec();
   $('#arena').classList.remove('low', 'boss', 'resonance');
   $('#bossIntro').className = 'bi'; $('#bossIntro').innerHTML = '';
@@ -3034,13 +3183,16 @@ $('#btnRetry').onclick = () => startStage(G.stage, G.review);
 $('#btnNext').onclick = () => beginStage(Math.min(12, G.stage + 1));
 $('#btnPass').onclick = () => onFail();
 $('#btnQuit').onclick = () => {
+  const wasTa = !!G.ta;
+  if (wasTa) taAbort();
   G.running = false; cancelAnimationFrame(G.raf); stopRec();
   $('#arena').classList.remove('boss', 'low', 'resonance');
   G.combo = 0; updateReso(false);
   $('#bossIntro').className = 'bi'; $('#bossIntro').innerHTML = '';
+  if (wasTa) { renderTA(null); show('ta'); return; }
   renderSelect(); show('select');
 };
-$('#btnReview').onclick = () => { if (SAVE.weak.length) startStage(1, true); };
+$('#btnReview').onclick = () => { renderWeak(); show('weak'); };
 $('#btnArchive').onclick = () => { renderArchive(); show('archive'); };
 $('#btnArcBack').onclick = () => { renderSelect(); show('select'); };
 let wipeArmed = false, wipeTimer = 0;
@@ -3171,6 +3323,424 @@ function openDrill(idx) {
   }
   render();
 }
+
+
+/* =========================================================================
+   タイムアタック
+   制限時間内に何語 浄化できるか。EGO は減らず、ボスも出ない。
+   ========================================================================= */
+const TA_SEC = [30, 60, 120];
+const TA_WORD_LIMIT = 7000;          /* 1語で詰まったときに次へ送る上限 */
+let taCfg = { sec: 60, range: 'all', stg: 1 };
+
+function taKey() {
+  const m = CFG.input === 'type' ? 'type' : 'voice';
+  const r = taCfg.range === 'sec' ? ('s' + taCfg.stg) : taCfg.range;
+  return m + '-' + taCfg.sec + '-' + r;
+}
+function taStore() {
+  if (!SAVE.ta) SAVE.ta = { best: {}, hist: [] };
+  if (!SAVE.ta.best) SAVE.ta.best = {};
+  if (!SAVE.ta.hist) SAVE.ta.hist = [];
+  return SAVE.ta;
+}
+function taRows() {
+  if (taCfg.range === 'weak') {
+    const w = SAVE.weak.map(x => byNum[x]).filter(Boolean);
+    return w.length ? w : W.slice();
+  }
+  if (taCfg.range === 'sec') return (POOL[taCfg.stg] || W).slice();
+  return W.slice();
+}
+/* 出題は尽きさせない。使い切ったら切り直す */
+function taRefill() { G.queue = shuffle(taRows()); G.i = 0; }
+
+function startTA() {
+  const rows = taRows();
+  if (!rows.length) { toast('出題できる単語がありません。'); return; }
+  G.stage = taCfg.range === 'sec' ? taCfg.stg : 1;
+  G.review = false; G.daily = false;
+  G.hp = MAXHP; G.combo = 0; G.maxCombo = 0; G.score = 0;
+  G.right = 0; G.tries = 0; G.missed = []; G.requeued = new Set();
+  G.phase = 'wave'; G.bossHp = 3; G.bossSpawned = false;
+  G.running = true; G.locked = false; G.nearCount = 0;
+  G.ta = { sec: taCfg.sec, key: taKey(), endAt: performance.now() + taCfg.sec * 1000, timer: 0, over: false };
+
+  setPoolWords(new Set(rows.flatMap(r => r[4].split(',')).map(a => norm(a)).filter(Boolean)));
+  taRefill();
+
+  $('#arena').classList.remove('boss', 'low', 'resonance');
+  updateReso(false);
+  $('#play').classList.add('ta-on');
+  $('#pStg').textContent = 'TIME ATTACK';
+  $('#bLabel').textContent = 'WORD TIMER';
+  $('#taCount').textContent = '0';
+  $('#taCombo').textContent = '';
+  renderEgo();
+  BGM.danger(false); BGM.reso(false); BGM.combat('wave');
+  show('play');
+  if (CFG.input === 'voice') startRec(); else setMode('type');
+  clearInterval(G.ta.timer);
+  G.ta.timer = setInterval(taClock, 100);
+  nextWord();
+}
+
+/* 全体の残り時間。1語ごとのロック中も止めない */
+function taClock() {
+  if (!G.ta || G.ta.over) return;
+  const left = G.ta.endAt - performance.now();
+  if (left <= 0) { endTA(); return; }
+  const p = left / (G.ta.sec * 1000);
+  $('#taFill').style.width = (p * 100) + '%';
+  $('#taSec').textContent = (left / 1000).toFixed(1) + '秒';
+  $('#taBar').classList.toggle('crit', left < 10000);
+}
+
+function taHud() {
+  $('#taCount').textContent = G.right;
+  $('#taCombo').textContent = G.combo >= 3 ? ('×' + G.combo) : '';
+}
+
+function endTA() {
+  if (!G.ta || G.ta.over) return;
+  G.ta.over = true; G.running = false; G.locked = true;
+  clearInterval(G.ta.timer); cancelAnimationFrame(G.raf); stopRec();
+  $('#taFill').style.width = '0%'; $('#taSec').textContent = '0.0秒';
+
+  const st = taStore(), key = G.ta.key;
+  const prev = st.best[key] || 0;
+  const words = G.right;
+  const isNew = words > prev;
+  if (isNew) st.best[key] = words;
+  st.hist.push({
+    t: Date.now(), key, words, combo: G.maxCombo,
+    acc: G.tries ? Math.round(G.right / G.tries * 100) : 0
+  });
+  if (st.hist.length > 120) st.hist = st.hist.slice(-120);
+  saveGame();
+
+  const sec = G.ta.sec;
+  G.ta = null;
+  $('#play').classList.remove('ta-on');
+  $('#arena').classList.remove('low', 'resonance');
+  try { SFX.resonance(RES_ON); } catch (e) {}
+  renderTA({
+    words, isNew, prev, combo: G.maxCombo,
+    acc: G.tries ? Math.round(G.right / G.tries * 100) : 0, sec
+  });
+  show('ta');
+}
+
+/* 途中でやめたとき。記録は残さず、時計だけ必ず止める */
+function taAbort() {
+  if (!G.ta) return;
+  clearInterval(G.ta.timer);
+  G.ta = null;
+  $('#play').classList.remove('ta-on');
+}
+
+/* 同じ条件の記録だけを並べた推移グラフ */
+function taGraphSVG(key) {
+  const rows = taStore().hist.filter(x => x.key === key).slice(-20);
+  if (rows.length < 2) return '<div class="empty">2回プレイすると、記録の推移が出ます。</div>';
+  const vals = rows.map(r => r.words);
+  const max = Math.max(...vals), min = Math.min(...vals);
+  const span = Math.max(1, max - min);
+  const WD = 100, HT = 56, pad = 6;
+  const pts = vals.map((v, i) => [
+    rows.length === 1 ? WD / 2 : (i / (rows.length - 1)) * WD,
+    pad + (1 - (v - min) / span) * (HT - pad * 2)
+  ]);
+  const line = pts.map((q, i) => (i ? 'L' : 'M') + q[0].toFixed(1) + ' ' + q[1].toFixed(1)).join(' ');
+  const area = line + ` L${WD} ${HT} L0 ${HT} Z`;
+  const last = pts[pts.length - 1];
+  return `<svg viewBox="0 0 ${WD} ${HT}" preserveAspectRatio="none" aria-label="記録の推移">
+    <defs><linearGradient id="tagrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="var(--bio)" stop-opacity=".32"/>
+      <stop offset="100%" stop-color="var(--bio)" stop-opacity="0"/></linearGradient></defs>
+    <path d="${area}" fill="url(#tagrad)"/>
+    <path d="${line}" fill="none" stroke="var(--bio)" stroke-width="1.6"
+      stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+    <circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="2.6" fill="var(--bio)"
+      vector-effect="non-scaling-stroke"/>
+  </svg>`;
+}
+
+function renderTA(last) {
+  const st = taStore(), key = taKey();
+  const seg = $('#taStgSeg');
+  if (!seg.children.length) {
+    seg.innerHTML = Array.from({ length: 12 },
+      (_, i) => `<button data-v="${i + 1}">${pad(i + 1)}</button>`).join('');
+    seg.querySelectorAll('button').forEach(b => b.onclick = () => {
+      taCfg.stg = +b.dataset.v; renderTA(null);
+    });
+  }
+  $$('#taSecSeg button').forEach(b => b.classList.toggle('on', +b.dataset.v === taCfg.sec));
+  $$('#taRangeSeg button').forEach(b => b.classList.toggle('on', b.dataset.v === taCfg.range));
+  $$('#taStgSeg button').forEach(b => b.classList.toggle('on', +b.dataset.v === taCfg.stg));
+  $('#taSecRow').style.display = taCfg.range === 'sec' ? 'flex' : 'none';
+
+  $('#taBestNum').textContent = st.best[key] || '—';
+  $('#taGraph').innerHTML = taGraphSVG(key);
+
+  const box = $('#taLast');
+  if (last) {
+    box.innerHTML = `<div class="talast">
+      <div class="top">
+        <div class="big">${last.words}<span>語 / ${last.sec}秒</span></div>
+        ${last.isNew ? '<span class="new">NEW RECORD</span>'
+        : (last.prev ? `<span style="font-size:11.5px;color:var(--dim)">ベストまで あと ${Math.max(1, last.prev - last.words + 1)} 語</span>` : '')}
+      </div>
+      <div class="sub">
+        <span>最高チェイン <b>×${last.combo}</b></span>
+        <span>正答率 <b>${last.acc}%</b></span>
+        <span>1語あたり <b>${last.words ? (last.sec / last.words).toFixed(1) : '—'}</b>秒</span>
+      </div>
+    </div>`;
+    $('#btnTaStart').textContent = 'もう一度';
+  } else {
+    box.innerHTML = '';
+    $('#btnTaStart').textContent = '開始する';
+  }
+}
+
+/* =========================================================================
+   マイクの確認
+   「動かない」の原因を、許可・ブラウザ・認識のどこかまで切り分ける。
+   ========================================================================= */
+function inAppBrowser() {
+  const u = navigator.userAgent || '';
+  if (/Line\//i.test(u)) return 'LINE';
+  if (/FBAN|FBAV|Instagram/i.test(u)) return 'Facebook / Instagram';
+  if (/CriOS/i.test(u)) return 'Chrome（iPhone版）';
+  if (/Twitter/i.test(u)) return 'X (Twitter)';
+  return '';
+}
+let diagRec = null, diagBusy = false, diagPerm = false;
+
+function diagStop() {
+  diagBusy = false;
+  if (diagRec) {
+    try {
+      diagRec.onresult = null; diagRec.onerror = null; diagRec.onend = null;
+      if (diagRec.abort) diagRec.abort(); else diagRec.stop();
+    } catch (e) {}
+    diagRec = null;
+  }
+  const b = $('#btnDiagMic');
+  if (b) { b.classList.remove('rec'); b.textContent = 'マイクを試す'; }
+}
+function diagSay(html, cls) {
+  const el = $('#diagResult');
+  if (!el) return;
+  el.innerHTML = html;
+  el.className = 'dgres' + (cls ? ' ' + cls : '');
+}
+function renderDiag() {
+  const app = inAppBrowser();
+  const https = location.protocol === 'https:' || location.hostname === 'localhost';
+  const rows = [
+    ['音声認識に対応', SRC ? 'はい' : 'いいえ', SRC ? 'ok' : 'ng'],
+    ['ブラウザ', app ? app + '（アプリ内）' : (IS_IOS ? 'Safari など' : '標準ブラウザ'), app ? 'ng' : 'ok'],
+    ['安全な接続 (https)', https ? 'はい' : 'いいえ', https ? 'ok' : 'ng'],
+    ['マイクの許可', diagPerm ? '取得済み' : '未確認', diagPerm ? 'ok' : '']
+  ];
+  $('#diagTable').innerHTML = rows.map(r =>
+    `<div class="dgrow"><span>${r[0]}</span><b class="${r[2]}">${escapeHtml(r[1])}</b></div>`).join('');
+  let hint;
+  if (app) hint = `<b>${escapeHtml(app)}のアプリ内ブラウザで開いています。</b>メニューから「Safariで開く」を選んでください。ここでは音声入力が使えません。`;
+  else if (!SRC) hint = 'このブラウザは音声入力に対応していません。iPhone は <b>Safari</b>、Android は <b>Chrome</b> で開いてください。';
+  else hint = '下のボタンを押して、英語で <b>hello</b> と言ってみてください。';
+  $('#diagHint').innerHTML = hint;
+  diagSay('', '');
+}
+
+const FIX_PERMISSION = `<b>マイクの許可が「拒否」で記憶されています。</b><br>
+一度「許可しない」を押すと、次から確認画面が出ません。下の手順で直せます。<br><br>
+<b>①</b> アドレスバー左の <b>「ぁA」</b> をタップ<br>
+<b>②</b> <b>「Webサイトの設定」</b> をタップ<br>
+<b>③</b> <b>「マイク」→「許可」</b> を選ぶ<br>
+<b>④</b> 「完了」を押して、このページを再読み込み<br><br>
+それでも直らないときは <b>設定 → Safari → カメラとマイク</b> を確認してください。<br>
+変わらない場合は、<b>端末を再起動</b>すると反映されることがあります。`;
+
+const FIX_DICTATION = `<b>マイクは使えていますが、音声認識が反応していません。</b><br><br>
+<b>①</b> 設定 → 一般 → キーボード → <b>音声入力</b> がオンか確認<br>
+<b>②</b> 設定 → スクリーンタイム → コンテンツとプライバシーの制限 → <b>マイク</b> が「変更を許可」か確認<br>
+<b>③</b> 設定で「環境音」と「効果音」を <b>なし</b> にして再挑戦<br>
+<b>④</b> それでも駄目なら、キーボード入力でも遊べます`;
+
+async function diagMic() {
+  if (diagRec || diagBusy) { diagStop(); diagSay('', ''); return; }
+  if (!SRC) {
+    diagSay('このブラウザでは音声入力が使えません。iPhone は Safari、Android は Chrome でお試しください。', 'ng');
+    return;
+  }
+  const b = $('#btnDiagMic');
+  diagBusy = true;
+  if (b) { b.classList.add('rec'); b.textContent = '確認中…'; }
+  unlockAudio();
+  if (window.speechSynthesis) { try { speechSynthesis.cancel(); } catch (e) {} }
+
+  /* 第1段階：許可そのものを取りに行く */
+  diagSay('マイクの許可を確認しています…', '');
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    diagSay('<b>この環境ではマイクを使えません。</b><br>https のページを Safari（iPhone）または Chrome（Android）で開いてください。', 'ng');
+    diagStop(); return;
+  }
+  let stream = null;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  } catch (err) {
+    const n = (err && err.name) || '';
+    if (n === 'NotAllowedError' || n === 'SecurityError' || n === 'PermissionDeniedError') diagSay(FIX_PERMISSION, 'ng');
+    else if (n === 'NotFoundError' || n === 'DevicesNotFoundError') diagSay('<b>マイクが見つかりません。</b><br>イヤホンを抜いて、もう一度お試しください。', 'ng');
+    else if (n === 'NotReadableError' || n === 'TrackStartError') diagSay('<b>ほかのアプリがマイクを使用中です。</b><br>通話アプリや録音アプリを終了してからお試しください。', 'ng');
+    else diagSay('<b>マイクを起動できませんでした。</b>（' + escapeHtml(n || '不明') + '）<br>ページを再読み込みしてお試しください。', 'ng');
+    diagStop(); return;
+  }
+  /* 認識とオーディオセッションが競合するので、許可を得たら即座に手放す */
+  try { stream.getTracks().forEach(t => t.stop()); } catch (e) {}
+  diagPerm = true;
+
+  /* 第2段階：実際に聞き取れるか */
+  if (b) b.textContent = '● 聞いています（押すと停止）';
+  diagSay('✓ マイクの許可は取得できました。<br>英語で <b>hello</b> と言ってみてください…', '');
+  let r;
+  try { r = new SRC(); }
+  catch (e) { diagSay('音声認識を起動できませんでした。', 'ng'); diagStop(); return; }
+  r.lang = 'en-US'; r.continuous = true; r.interimResults = true; r.maxAlternatives = 3;
+  let heardSomething = false;
+  r.onresult = e => {
+    const t = [];
+    for (let i = 0; i < e.results.length; i++) t.push(e.results[i][0].transcript);
+    const txt = t.join(' ').trim();
+    if (txt) {
+      heardSomething = true;
+      diagSay('✓ 聞こえました：<i>' + escapeHtml(txt) + '</i><br>マイクも音声認識も正常に動いています。', 'ok');
+    }
+  };
+  r.onerror = e => {
+    if (e.error === 'not-allowed' || e.error === 'service-not-allowed') { diagSay(FIX_PERMISSION, 'ng'); diagStop(); }
+    else if (e.error === 'audio-capture') { diagSay('<b>マイクが見つかりません。</b>', 'ng'); diagStop(); }
+  };
+  r.onend = () => { if (diagRec && !heardSomething) { try { r.start(); } catch (e) {} } };
+  diagRec = r;
+  try { r.start(); }
+  catch (e) { diagSay('音声認識を起動できませんでした。', 'ng'); diagStop(); return; }
+
+  /* 12秒たっても何も拾えなければ、認識側の設定を疑う */
+  setTimeout(() => {
+    if (diagRec === r && !heardSomething) { diagSay(FIX_DICTATION, 'ng'); diagStop(); }
+  }, 12000);
+  renderDiag();
+}
+
+/* =========================================================================
+   苦手単語の一覧
+   ========================================================================= */
+let wkCheckRec = null, wkCheckNum = 0;
+
+function wkStopCheck() {
+  if (wkCheckRec) {
+    try {
+      wkCheckRec.onresult = null; wkCheckRec.onerror = null; wkCheckRec.onend = null;
+      if (wkCheckRec.abort) wkCheckRec.abort(); else wkCheckRec.stop();
+    } catch (e) {}
+    wkCheckRec = null;
+  }
+  wkCheckNum = 0;
+  $$('#wkList .wkbtn.on').forEach(b => b.classList.remove('on'));
+}
+
+function renderWeak() {
+  wkStopCheck();
+  const rows = SAVE.weak.map(x => byNum[x]).filter(Boolean);
+  $('#wkNote').innerHTML = rows.length
+    ? `浄化できなかった単語 <b>${rows.length}</b> 語。`
+    : 'いまのところ、苦手単語はありません。';
+  $('#btnWkStart').disabled = !rows.length;
+  $('#btnWkClear').disabled = !rows.length;
+  $('#wkList').innerHTML = rows.length
+    ? rows.map(r => {
+      const w = escapeHtml(r[4].split(',')[0]);
+      return `<div class="wkitem" data-num="${r[0]}">
+        <button class="wkbtn" data-say="${w}" aria-label="お手本を聞く">🔊</button>
+        <div class="wkbody"><div class="wken">${w}</div><div class="wkjp">${escapeHtml(r[3])}</div></div>
+        <button class="wkbtn" data-check="${r[0]}" aria-label="発音をチェックする">🎤</button>
+        <button class="wkbtn" data-del="${r[0]}" aria-label="リストから外す">✕</button>
+      </div>`;
+    }).join('')
+    : '<div class="wkempty">区画で言えなかった単語が、ここに集まります。</div>';
+
+  $$('#wkList [data-say]').forEach(b => b.onclick = () => { unlockAudio(); say(b.dataset.say, { force: true }); });
+  $$('#wkList [data-del]').forEach(b => b.onclick = async () => {
+    const n = +b.dataset.del;
+    SAVE.weak = SAVE.weak.filter(x => x !== n);
+    await saveGame(); renderWeak(); renderSelect();
+  });
+  $$('#wkList [data-check]').forEach(b => b.onclick = () => wkCheck(+b.dataset.check, b));
+}
+
+/* その場で1語だけ発音チェック。正しく言えたらリストから消す */
+function wkCheck(num, btn) {
+  if (wkCheckNum === num) { wkStopCheck(); return; }
+  wkStopCheck();
+  if (!SRC) { toast('この端末は音声認識に対応していません。'); return; }
+  const row = byNum[num];
+  if (!row) return;
+  const answers = row[4].split(',');
+  wkCheckNum = num;
+  btn.classList.add('on');
+  setPoolWords(new Set());
+  unlockAudio();
+
+  let r;
+  try { r = new SRC(); } catch (e) { wkStopCheck(); return; }
+  r.lang = 'en-US'; r.continuous = true; r.interimResults = true; r.maxAlternatives = 10;
+  r.onresult = async e => {
+    const texts = [];
+    for (let i = Math.max(0, e.resultIndex - 1); i < e.results.length; i++) {
+      const res = e.results[i];
+      for (let a = 0; a < res.length; a++) texts.push(res[a].transcript);
+    }
+    if (!texts.some(t => judge(t, answers).ok)) return;
+    wkStopCheck();
+    SAVE.weak = SAVE.weak.filter(x => x !== num);
+    await saveGame();
+    const item = $(`#wkList .wkitem[data-num="${num}"]`);
+    if (item) item.classList.add('done');
+    try { SFX.kill(false); } catch (e) {}
+    say(answers[0], { force: true });
+    toast(`${answers[0]} — 浄化しました。`);
+    setTimeout(() => { renderWeak(); renderSelect(); }, 900);
+  };
+  r.onerror = () => wkStopCheck();
+  r.onend = () => { if (wkCheckRec === r) { try { r.start(); } catch (e) {} } };
+  wkCheckRec = r;
+  try { r.start(); } catch (e) { wkStopCheck(); }
+}
+
+/* ---------- 配線 ---------- */
+$('#btnTa').onclick = () => { renderTA(null); show('ta'); };
+$('#btnTaBack').onclick = () => { renderSelect(); show('select'); };
+$('#btnTaStart').onclick = () => startTA();
+$$('#taSecSeg button').forEach(b => b.onclick = () => { taCfg.sec = +b.dataset.v; renderTA(null); });
+$$('#taRangeSeg button').forEach(b => b.onclick = () => { taCfg.range = b.dataset.v; renderTA(null); });
+
+$('#btnDiag').onclick = () => { renderDiag(); show('diag'); };
+$('#btnDiagBack').onclick = () => { diagStop(); renderSelect(); show('select'); };
+$('#btnDiagMic').onclick = () => diagMic();
+
+$('#btnWkBack').onclick = () => { wkStopCheck(); renderSelect(); show('select'); };
+$('#btnWkStart').onclick = () => { wkStopCheck(); if (SAVE.weak.length) startStage(1, true); };
+$('#btnWkClear').onclick = async () => {
+  if (!SAVE.weak.length) return;
+  if (!confirm('苦手単語の記録をすべて消します。よろしいですか？')) return;
+  SAVE.weak = []; await saveGame(); renderWeak(); renderSelect();
+  toast('苦手単語を空にしました。');
+};
 
 $('#btnHow').onclick = () => {
   const d = document.createElement('div');
