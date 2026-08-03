@@ -107,6 +107,20 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .card.trueend .testate{margin-left:auto;flex:none;font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;
   color:#FF5145;border:1px solid rgba(214,52,42,.6);padding:7px 10px;border-radius:2px;
   animation:teglow 1.7s steps(1) infinite}
+/* 全区画クリア済みだが、まだ全Sではない状態。押せないが条件は読める */
+.card.trueend.telock{align-items:center;flex-wrap:wrap;gap:10px;
+  background:linear-gradient(100deg,#1B1512,#100C0B 62%);
+  border-color:rgba(120,110,100,.38);border-style:dashed;
+  box-shadow:none;animation:none;cursor:default}
+.card.trueend.telock .tetxt{flex:1 1 100%;order:3;margin-top:2px}
+.card.trueend.telock .temk{color:#6E655B;text-shadow:none;animation:none}
+.card.trueend.telock .nm{color:#8B8278;text-shadow:none}
+.card.trueend.telock .rg{color:#7C736A}
+.card.trueend.telock .testate{color:#6E655B;
+  border-color:rgba(120,110,100,.42);animation:none}
+.card.trueend .tecond{font-size:11.5px;line-height:1.6;color:#B8AEA2;margin-top:5px}
+.card.trueend .tehint{margin-top:7px;font-size:10.5px;line-height:1.7;color:var(--hazard);
+  border-left:2px solid rgba(232,179,58,.45);padding-left:8px}
 
 .card.brief{grid-column:1/-1;display:flex;align-items:center;gap:12px;padding:13px 14px;
   background:linear-gradient(100deg,#171310,#0E0C0A 60%);border-color:rgba(232,179,58,.34)}
@@ -2544,15 +2558,30 @@ function renderSelect() {
       : () => toast(`区画 ${pad(n - 1)}「${STAGES[n - 2].t}」を浄化すると解放されます。`);
     g.appendChild(b);
   });
-  const allS = [1,2,3,4,5,6,7,8,9,10,11,12].every(n => SAVE.best[n] === 'S');
-  if (allS) {
+  /* 全12区画を浄化した時点で、隠しエピソードの存在と条件を明かす。
+     押せるようになるのは全区画Sランク到達後。 */
+  const ALL = [1,2,3,4,5,6,7,8,9,10,11,12];
+  const sCount = ALL.filter(n => SAVE.best[n] === 'S').length;
+  const allCleared = ALL.every(n => !!SAVE.cleared[n]);
+  const allS = sCount === 12;
+  if (allCleared || allS) {
     const bt = document.createElement('button');
-    bt.className = 'card trueend';
-    bt.innerHTML = `<span class="temk">TRUE</span>
-      <div class="tetxt"><div class="nm">TRUE EPILOGUE — 隠された真実</div>
-      <div class="rg">全区画 S ランク到達 · 解禁</div></div>
-      <div class="testate">▶ 再生</div>`;
-    bt.onclick = () => { SFX.ui(); playTrueEpilogue(); };
+    bt.className = 'card trueend' + (allS ? '' : ' telock');
+    if (allS) {
+      bt.innerHTML = `<span class="temk">TRUE</span>
+        <div class="tetxt"><div class="nm">TRUE EPILOGUE — 隠された真実</div>
+        <div class="rg">全区画 S ランク到達 · 解禁</div></div>
+        <div class="testate">▶ 再生</div>`;
+      bt.onclick = () => { SFX.ui(); playTrueEpilogue(); };
+    } else {
+      bt.disabled = true;
+      bt.innerHTML = `<span class="temk">? ? ?</span>
+        <div class="tetxt"><div class="nm">TRUE EPILOGUE — 隠された真実</div>
+        <div class="tecond">全てSランクでクリアするとみることができます。</div>
+        <div class="rg">S ランク ${sCount} / 12 区画</div>
+        <div class="tehint">※ヒント※ 音声が聞き取ってもらえないときは、キーボード入力に切り替えてみましょう</div></div>
+        <div class="testate">LOCKED</div>`;
+    }
     g.appendChild(bt);
   }
 
