@@ -2114,6 +2114,51 @@ const Store = (() => {
   };
 })();
 
+/* =========================================================================
+   プレイ回数の記録
+   GoatCounter（無料・Cookieなし・個人情報を集めない）へ送ります。
+   COUNT_CODE を空にすると、通信は一切発生しません。
+   ========================================================================= */
+const COUNT_CODE = 'vox9';
+
+const TALLY = (function () {
+  const off = { hit: function () {} };
+  if (!COUNT_CODE || !/^[a-z0-9][a-z0-9-]*$/i.test(COUNT_CODE)) return off;
+
+  const queue = [];
+  let ready = false, dead = false;
+
+  const fire = function (e) {
+    try { window.goatcounter.count({ path: e.path, title: e.title, event: true }); } catch (err) {}
+  };
+  try {
+    const el = document.createElement('script');
+    el.async = true;
+    el.src = 'https://gc.zgo.at/count.js';
+    el.setAttribute('data-goatcounter', 'https://' + COUNT_CODE + '.goatcounter.com/count');
+    el.onerror = function () { dead = true; queue.length = 0; };
+    document.head.appendChild(el);
+  } catch (e) { return off; }
+
+  /* count.js は非同期で読み込まれるので、届くまで貯めておく */
+  const t = setInterval(function () {
+    if (dead) { clearInterval(t); return; }
+    if (!window.goatcounter || !window.goatcounter.count) return;
+    clearInterval(t); ready = true;
+    queue.splice(0).forEach(fire);
+  }, 200);
+  setTimeout(function () { clearInterval(t); if (!ready) { dead = true; queue.length = 0; } }, 15000);
+
+  return {
+    /* 集計は「何回遊ばれたか」だけ。誰が・どの端末かは一切送りません。 */
+    hit: function (path, title) {
+      if (!path || dead) return;
+      if (ready) fire({ path: path, title: title });
+      else if (queue.length < 30) queue.push({ path: path, title: title });
+    }
+  };
+})();
+
 const DEF = { input: 'voice', speed: 'normal', dots: 'on', jp: 'on', tts: 'on', sfx: 'on', story: 'on', judge: 'soft', count: '20' };
 let CFG = { ...DEF };
 let SAVE = {
@@ -2845,6 +2890,9 @@ function beginRun(opt) {
 }
 
 function startStage(n, review) {
+  TALLY.hit('play', 'プレイ開始');                                   /* 総プレイ回数 */
+  TALLY.hit(review ? 'play-review' : 'play-sector-' + pad(n),
+            review ? '苦手単語の復習 開始' : `区画 ${pad(n)} 開始`);   /* 内訳 */
   const list = review
     ? shuffle(SAVE.weak.map(x => byNum[x]).filter(Boolean)).slice(0, 30)
     : shuffle(POOL[n]).slice(0, CFG.count === '100' ? POOL[n].length : Math.min(+CFG.count, POOL[n].length));
@@ -2856,6 +2904,8 @@ function startStage(n, review) {
 
 /* デイリー特務：苦手単語を軸に10語。足りなければ全区画から補充 */
 function startDaily() {
+  TALLY.hit('play', 'プレイ開始');
+  TALLY.hit('play-daily', 'デイリー特務 開始');
   const list = shuffle(SAVE.weak.map(x => byNum[x]).filter(Boolean)).slice(0, 10);
   if (list.length < 10) {
     const used = new Set(list.map(r => r[0]));
@@ -3120,9 +3170,13 @@ async function endStage(survived) {
   const n = G.stage, st = STAGES[n - 1];
 
   if (survived && !G.review && !G.daily) {
+    const firstClear = !SAVE.cleared[n];
     SAVE.cleared[n] = true;
     const ord = { S: 4, A: 3, B: 2, C: 1, D: 0 };
     if (!SAVE.best[n] || ord[rank] > ord[SAVE.best[n]]) SAVE.best[n] = rank;
+    TALLY.hit('clear-sector-' + pad(n), `区画 ${pad(n)} 浄化（${rank}）`);
+    if (firstClear) TALLY.hit('first-clear-sector-' + pad(n), `区画 ${pad(n)} 初浄化`);
+    if (n === 12) TALLY.hit('ending', '全区画浄化・エンディング到達');
     SAVE.recs[n] = true;
     await saveGame();
     const lastSc = (st.cine[st.cine.length - 1] || {}).sc || 'corridor';
@@ -3368,6 +3422,8 @@ function taRows() {
 function taRefill() { G.queue = shuffle(taRows()); G.i = 0; }
 
 function startTA() {
+  TALLY.hit('play', 'プレイ開始');
+  TALLY.hit('play-timeattack', 'タイムアタック 開始');
   const rows = taRows();
   if (!rows.length) { toast('出題できる単語がありません。'); return; }
   G.stage = taCfg.range === 'sec' ? taCfg.stg : 1;
