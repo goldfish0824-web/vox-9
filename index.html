@@ -26,6 +26,11 @@
 <meta name="license" content="CC BY-NC-SA 4.0">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="theme-color" content="#0A0908">
+<!-- ホーム画面に追加したときの名前とアイコン（manifest-vox9.json と vox9_img/ のアイコン） -->
+<link rel="manifest" href="manifest-vox9.json">
+<link rel="icon" type="image/png" href="vox9_img/icon-192.png">
+<link rel="apple-touch-icon" href="vox9_img/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="VOX-9">
 <title>VOX-9 ／ 音声討伐</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -800,6 +805,20 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .wkbtn:active{transform:scale(.94)}
 .wkbtn.on{border-color:var(--blood);color:var(--blood)}
 .wkempty{font-size:12.5px;color:var(--dim);padding:26px 0;text-align:center}
+/* ---------- ホーム画面に追加（スマホのときだけ出す） ---------- */
+#btnA2hs{display:none}
+#btnA2hs.on{display:block}
+.a2hs-sheet{position:fixed;inset:0;z-index:80;background:rgba(6,5,4,.97);padding:24px 20px;overflow:auto;
+  font-size:13px;line-height:2}
+.a2hs-steps{margin:12px 0;padding:0;list-style:none;counter-reset:st}
+.a2hs-steps li{position:relative;padding:8px 0 8px 36px;line-height:1.8;border-bottom:1px dashed var(--edge)}
+.a2hs-steps li:last-child{border-bottom:0}
+.a2hs-steps li::before{counter-increment:st;content:counter(st);position:absolute;left:0;top:11px;width:24px;height:24px;
+  display:grid;place-items:center;font-family:var(--mono);font-size:12px;font-weight:700;line-height:1;
+  color:#12100E;background:var(--hazard);border-radius:2px}
+.a2hs-steps b{color:var(--hazard)}
+.a2hs-steps small{display:block;color:var(--dust);font-size:11.5px;line-height:1.6}
+.a2hs-steps .ico{display:inline-block;width:18px;height:18px;vertical-align:-3px;margin:0 2px;color:var(--hazard)}
 </style>
 </head>
 <body>
@@ -814,6 +833,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
       <p class="subttl">言語統一計画「バベル」——世界から言葉を奪う計画。<br>正しく調音された言葉だけが、ノイズを打ち消せる。</p>
       <button class="big" id="btnStart">containment 開始</button>
       <button class="ghost" id="btnHow">操作と判定について</button>
+      <button class="ghost" id="btnA2hs">ホーム画面に追加する</button>
       <div class="credit">
         © 2026 TOMOAKI KITO<br>
         <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.ja" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a>
@@ -3839,6 +3859,79 @@ document.addEventListener('visibilitychange', () => {
     try { rec.start(); } catch (e) {}
   }
 });
+
+/* =========================================================================
+   ホーム画面に追加 ── スマホ（iPhone・Android）で開いたときだけ、タイトルにボタンを出す。
+   ・Android の Chrome は、インストールの画面をそのまま開ける（beforeinstallprompt）。来ないときは手順を出す。
+   ・iPhone は Web ページから開けないので、手順を出す。
+   ・manifest-vox9.json の display は minimal-ui。iPhone は minimal-ui を使わず、ふつうの Safari で開く
+     （記録と音声入力が、Safari で遊ぶときと同じになる）。start_url は書かない（このページ自身になる）。
+   ・「追加できた」を押すと、この端末ではボタンを出さない（localStorage vox9:a2hs）。
+   ========================================================================= */
+const A2HS = (() => {
+  const ua = navigator.userAgent;
+  const isAndroid = /Android/i.test(ua);
+  const inApp = /Line\/|FBAN|FBAV|Instagram/i.test(ua);
+  const launched = () => matchMedia('(display-mode: standalone)').matches
+    || matchMedia('(display-mode: minimal-ui)').matches || navigator.standalone === true;
+  const SHARE = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" '
+    + 'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/>'
+    + '<path d="M7 10H5.5A1.5 1.5 0 0 0 4 11.5v8A1.5 1.5 0 0 0 5.5 21h13a1.5 1.5 0 0 0 1.5-1.5v-8A1.5 1.5 0 0 0 18.5 10H17"/></svg>';
+  let deferred = null;
+  const hidden = () => { try{ return localStorage.getItem('vox9:a2hs')==='1'; }catch(e){ return false; } };
+  function refresh(){
+    const b = $('#btnA2hs'); if(!b) return;
+    b.classList.toggle('on', (IS_IOS || isAndroid || !!deferred) && !launched() && !hidden());
+  }
+  function hide(){ try{ localStorage.setItem('vox9:a2hs','1'); }catch(e){} refresh(); }
+  function steps(ios){
+    if(ios) return { list:[
+        `画面の下（または上）にある <b>［共有］</b>${SHARE}をタップ。<small>見つからないときは、<b>［…］</b>をタップすると出てきます。</small>`,
+        'メニューを下にスクロールして、<b>「ホーム画面に追加」</b>をタップ。',
+        '<b>「Webアプリとして開く」</b>が出ていたら、<b>オフ</b>にする。<small>Safari で開くので、今までの記録と音声入力がそのまま使えます。</small>',
+        '右上の<b>「追加」</b>をタップ。'],
+      note: inApp ? 'LINE などのアプリの中で開いているときは、先にメニューから「Safari で開く」を選んでください。'
+                  : 'Chrome など Safari 以外で開いているときも、同じように［共有］から追加できます。' };
+    return { list:[
+        '右上の <b>［⋮］</b>（メニュー）をタップ。',
+        '<b>「ホーム画面に追加」</b>または<b>「アプリをインストール」</b>をタップ。',
+        '<b>「追加」</b>（または「インストール」）をタップ。'],
+      note: inApp ? 'LINE などのアプリの中で開いているときは、先にメニューから「ブラウザで開く」を選んでください。' : '' };
+  }
+  /* Android の Chrome：インストールの画面をそのまま出せたら true */
+  async function native(){
+    if(!deferred) return false;
+    const p = deferred; deferred = null;
+    try{ await p.prompt(); const r = await p.userChoice;
+         if(r && r.outcome==='accepted') toast('ホーム画面に追加しました。'); }catch(e){}
+    refresh(); return true;
+  }
+  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferred = e; refresh(); });
+  window.addEventListener('appinstalled', () => { deferred = null; hide(); });
+  /* 手順は「操作と判定について」と同じ、全面のシートで出す */
+  async function open(){
+    if(await native()) return;
+    const st = steps(IS_IOS);
+    const d = document.createElement('div');
+    d.className = 'a2hs-sheet';
+    d.innerHTML = `<div style="max-width:440px;margin:0 auto">
+      <div class="eyebrow">Install</div>
+      <h2 style="font-family:var(--disp);font-size:26px;margin:6px 0 14px">ホーム画面に追加</h2>
+      <div class="tape thin" style="margin-bottom:14px"></div>
+      <p class="muted">ホーム画面に「VOX-9」のアイコンができて、次からはワンタップで開けます。</p>
+      <ol class="a2hs-steps">${st.list.map(t=>`<li>${t}</li>`).join('')}</ol>
+      ${st.note ? `<p class="muted" style="font-size:11.5px;line-height:1.8">${st.note}</p>` : ''}
+      <button class="big" data-act="close" style="margin-top:8px">閉じる</button>
+      <button class="ghost" data-act="done">追加できた（もう出さない）</button></div>`;
+    d.querySelector('[data-act=close]').onclick = () => d.remove();
+    d.querySelector('[data-act=done]').onclick = () => { hide(); d.remove();
+      toast('ボタンを消しました。ホーム画面のアイコンから開けます。'); };
+    document.body.appendChild(d);
+  }
+  return { refresh, open, hide, steps };
+})();
+$('#btnA2hs').onclick = () => A2HS.open();
+A2HS.refresh();
 
 loadAll().then(() => { setJudgeLevel(CFG.judge); renderSelect(); });
 </script>

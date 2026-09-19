@@ -1,0 +1,14 @@
+{
+  "name": "VOX-9 ／ 音声討伐",
+  "short_name": "VOX-9",
+  "description": "正しく発音した英単語で感染体を浄化する、声で戦う英単語ゲーム",
+  "lang": "ja",
+  "display": "minimal-ui",
+  "background_color": "#0A0908",
+  "theme_color": "#0A0908",
+  "icons": [
+    { "src": "vox9_img/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "vox9_img/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "vox9_img/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
