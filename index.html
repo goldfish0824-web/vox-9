@@ -3182,7 +3182,7 @@ async function endStage(survived) {
   const acc = G.tries ? G.right / G.tries : 0;
   let rank = 'D';
   if (survived) {
-    if (acc >= .95 && G.hp === MAXHP) rank = 'S';
+    if (G.tries - G.right <= 2) rank = 'S';          /* S は2問ミスまで（EGO が3つ以上残る） */
     else if (acc >= .85) rank = 'A';
     else if (acc >= .7) rank = 'B';
     else rank = 'C';
